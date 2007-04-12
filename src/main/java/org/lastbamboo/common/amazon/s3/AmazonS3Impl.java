@@ -53,10 +53,27 @@ public class AmazonS3Impl implements AmazonS3
         final String url = "https://s3.amazonaws.com:443/" + fullPath;
         LOG.debug("Getting file from URL: "+url);
         final GetMethod method = new GetMethod(url);
+        normalizeRequest(method, "GET", fullPath, false, true);
         
         final InputStreamHandler handler = 
             new FileInputStreamHandler(target);
-        sendRequest(method, "GET", fullPath, handler);
+        sendRequest(method, handler);
+        }
+    
+    public void getPublicFile(final String bucketName, final String fileName, 
+        final File target) throws IOException
+        {
+        final String fullPath = 
+            this.m_accessKeyId + "-" + bucketName + "/" + fileName;
+        final String url = "http://s3.amazonaws.com/" + fullPath;
+        LOG.debug("Getting file from URL: "+url);
+        final GetMethod method = new GetMethod(url);
+        
+        // This is a public file, so we don't send the authentication token.
+        normalizeRequest(method, "GET", fullPath, false, false);
+        final InputStreamHandler handler = 
+            new FileInputStreamHandler(target);
+        sendRequest(method, handler);
         }
     
     public void putFile(final String bucketName, final File file) 
@@ -66,7 +83,22 @@ public class AmazonS3Impl implements AmazonS3
             {
             final InputStream is = new FileInputStream(file);
             final RequestEntity re = new InputStreamRequestEntity(is);
-            put(bucketName+"/"+file.getName(), re);
+            put(bucketName+"/"+file.getName(), re, false);
+            }
+        catch (final FileNotFoundException e)
+            {
+            LOG.error("File Not Found: "+file, e);
+            }
+        }
+    
+    public void putPublicFile(final String bucketName, final File file) 
+        throws IOException
+        {
+        try
+            {
+            final InputStream is = new FileInputStream(file);
+            final RequestEntity re = new InputStreamRequestEntity(is);
+            put(bucketName+"/"+file.getName(), re, true);
             }
         catch (final FileNotFoundException e)
             {
@@ -76,11 +108,11 @@ public class AmazonS3Impl implements AmazonS3
 
     public void createBucket(final String bucketName) throws IOException
         {
-        put(bucketName, null);
+        put(bucketName, null, false);
         }
     
-    private void put(final String relativePath, final RequestEntity re) 
-        throws IOException
+    private void put(final String relativePath, final RequestEntity re, 
+        final boolean isPublic) throws IOException
         {
         final String fullPath = this.m_accessKeyId + "-"+relativePath;
         final String url = "https://s3.amazonaws.com:443/" + fullPath;
@@ -96,27 +128,53 @@ public class AmazonS3Impl implements AmazonS3
             method.setRequestHeader("Content-Type", "");
             }
         
-        sendRequest(method, "PUT", fullPath);
-        }
-
-    private void sendRequest(final HttpMethod method, final String methodString,
-        final String fullPath) throws IOException
-        {
         final InputStreamHandler handler = new NoOpInputStreamHandler();
-        sendRequest(method, methodString, fullPath, handler);
+        normalizeRequest(method, "PUT", fullPath, isPublic, true);
+        sendRequest(method, handler);
+        
         }
 
-    private void sendRequest(final HttpMethod method, final String methodString, 
-        final String fullPath, final InputStreamHandler handler) 
-        throws IOException
+    /**
+     * Normalizes the HTTP request headers with things like the authentication
+     * token, the date, etc.
+     * 
+     * @param method The HTTP method.
+     * @param methodString The HTTP method string, such as "PUT" or "GET".
+     * @param fullPath The full path for the resource.
+     * @param addPublicHeader Whether or not to add the header to make a 
+     * resource publicly accessible, as in:<p>
+     * 
+     * x-amz-acl: public-read
+     * <p>
+     * 
+     * @param useAuth Whether or not to add the authentication header.
+     */
+    private void normalizeRequest(final HttpMethod method, 
+        final String methodString, final String fullPath, 
+        final boolean addPublicHeader, final boolean useAuth)
         {
-        final HttpClient client = new HttpClient();
-        
         final Header dateHeader = new Header("Date", 
             HttpUtils.createHttpDate());
         method.setRequestHeader(dateHeader);
-        final Header auth = createAuthHeader(method, methodString, fullPath);
-        method.setRequestHeader(auth);
+        if (addPublicHeader)
+            {
+            final Header publicHeader = new Header("x-amz-acl", "public-read");
+            method.setRequestHeader(publicHeader);
+            }
+        
+        if (useAuth)
+            {
+            final Header auth = createAuthHeader(method, methodString, fullPath);
+            method.setRequestHeader(auth);
+            }
+        }
+
+    private void sendRequest(final HttpMethod method, 
+        final InputStreamHandler handler) throws IOException
+        {
+        final HttpClient client = new HttpClient();
+        
+        
         
         if (LOG.isDebugEnabled())
             {

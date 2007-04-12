@@ -43,13 +43,13 @@ public class AmazonS3Test extends TestCase
         fw.write(fileText);
         fw.close();
         
-        amazon.putFile("installers", testFile);
+        amazon.putPublicFile("installers", testFile);
         
         System.out.println("Downloading file...");
         final File file = new File("s3File.test");
         file.deleteOnExit();
         
-        amazon.getFile("installers", testFile.getName(), file);
+        amazon.getPublicFile("installers", testFile.getName(), file);
         assertEquals(testFile.length(), file.length());
         
         final BufferedReader br = new BufferedReader(new FileReader(file));
