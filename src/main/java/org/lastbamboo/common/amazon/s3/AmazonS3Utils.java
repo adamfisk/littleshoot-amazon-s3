@@ -33,20 +33,16 @@ public class AmazonS3Utils
     
     private static final Log LOG = LogFactory.getLog(AmazonS3Utils.class);
     
-    static final String METADATA_PREFIX = "x-amz-meta-";
-    static final String AMAZON_HEADER_PREFIX = "x-amz-";
-    static final String ALTERNATIVE_DATE_HEADER = "x-amz-date";
-    static final String DEFAULT_HOST = "s3.amazonaws.com";
-    static final int SECURE_PORT = 443;
-    static final int INSECURE_PORT = 80;
+    private static final String AMAZON_HEADER_PREFIX = "x-amz-";
+    private static final String ALTERNATIVE_DATE_HEADER = "x-amz-date";
     
     /**     
      * HMAC/SHA1 Algorithm per RFC 2104.     
      */    
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
 
-    static String makeCanonicalString(String method, String resource, 
-        Header[] headers) 
+    static String makeCanonicalString(final String method, 
+       final String resource, final Header[] headers) 
         {
         return makeCanonicalString(method, resource, headers, null);
         }

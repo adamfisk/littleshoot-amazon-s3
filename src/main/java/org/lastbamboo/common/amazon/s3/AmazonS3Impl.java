@@ -134,22 +134,7 @@ public class AmazonS3Impl implements AmazonS3
         
         }
 
-    /**
-     * Normalizes the HTTP request headers with things like the authentication
-     * token, the date, etc.
-     * 
-     * @param method The HTTP method.
-     * @param methodString The HTTP method string, such as "PUT" or "GET".
-     * @param fullPath The full path for the resource.
-     * @param addPublicHeader Whether or not to add the header to make a 
-     * resource publicly accessible, as in:<p>
-     * 
-     * x-amz-acl: public-read
-     * <p>
-     * 
-     * @param useAuth Whether or not to add the authentication header.
-     */
-    private void normalizeRequest(final HttpMethod method, 
+    public void normalizeRequest(final HttpMethod method, 
         final String methodString, final String fullPath, 
         final boolean addPublicHeader, final boolean useAuth)
         {
