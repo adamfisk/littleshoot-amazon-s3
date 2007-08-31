@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Security;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -43,6 +44,19 @@ public class AmazonS3Impl implements AmazonS3
         {
         this.m_accessKeyId = accessKeyId;
         this.m_secretAccessKey = secretAccessKey;
+        configureDns();
+        }
+    
+    private static void configureDns()
+        {
+        // We modify the permanent DNS caching for successful lookups because
+        // Amazon periodically changes the machines buckets point to.  See:
+        // http://java.sun.com/j2se/1.5.0/docs/api/java/net/InetAddress.html
+        // and "DNS Considerations" under "Using Amazon S3" at:
+        // http://docs.amazonwebservices.com/AmazonS3/2006-03-01/
+        final int cacheSeconds = 1000 * 60 * 60;
+        Security.setProperty("networkaddress.cache.ttl", 
+            Integer.toString(cacheSeconds));
         }
     
     public void getFile(final String bucketName, final String fileName, 
