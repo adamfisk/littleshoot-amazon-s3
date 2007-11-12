@@ -17,6 +17,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.lastbamboo.common.amazon.stack.AmazonWsUtils;
 import org.lastbamboo.common.util.FileInputStreamHandler;
 import org.lastbamboo.common.util.HttpUtils;
 import org.lastbamboo.common.util.InputStreamHandler;
@@ -233,7 +234,7 @@ public class AmazonS3Impl implements AmazonS3
             AmazonS3Utils.makeCanonicalString(methodString, fullPath, 
                 method.getRequestHeaders());
         final String encodedCanonical = 
-            AmazonS3Utils.encode(this.m_secretAccessKey, canonicalString, false);
+            AmazonWsUtils.encode(this.m_secretAccessKey, canonicalString, false);
         
         final String authValue = 
             "AWS " + this.m_accessKeyId + ":" + encodedCanonical;
