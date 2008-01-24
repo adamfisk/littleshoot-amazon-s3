@@ -22,9 +22,10 @@ public class Launcher
             return;
             }
         final AmazonS3 s3 = new AmazonS3Impl(args[0], args[1]);
+        final String bucketName = args[2];
         try
             {
-            s3.createBucket(args[2]);
+            s3.createBucket(bucketName);
             }
         catch (final IOException e)
             {
@@ -40,7 +41,7 @@ public class Launcher
             }
         try
             {
-            s3.putPublicFile(args[3], file);
+            s3.putPublicFile(bucketName, file);
             }
         catch (IOException e)
             {
