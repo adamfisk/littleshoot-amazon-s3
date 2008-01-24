@@ -36,4 +36,21 @@
             <artifactId>lastbamboo-common-amazon-stack</artifactId>
             </dependency>
         </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.lastbamboo</groupId>
+                <artifactId>lastbamboo-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>
+                        org.lastbamboo.common.amazon.s3.Launcher
+                        </mainClass>
+                    <javaArgs>
+                        <param>-Xmx700m</param>
+                        </javaArgs>
+         
+                    </configuration>
+                </plugin>
+            </plugins>
+        </build>
     </project>

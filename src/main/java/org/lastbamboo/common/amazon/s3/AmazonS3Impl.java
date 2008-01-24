@@ -153,8 +153,7 @@ public class AmazonS3Impl implements AmazonS3
         final String methodString, final String fullPath, 
         final boolean addPublicHeader, final boolean useAuth)
         {
-        final Header dateHeader = new Header("Date", 
-            HttpUtils.createHttpDate());
+        final Header dateHeader = new Header("Date", HttpUtils.createHttpDate());
         method.setRequestHeader(dateHeader);
         if (addPublicHeader)
             {
@@ -174,8 +173,6 @@ public class AmazonS3Impl implements AmazonS3
         {
         final HttpClient client = new HttpClient();
         
-        
-        
         if (LOG.isDebugEnabled())
             {
             printHeaders(method.getRequestHeaders());
@@ -193,14 +190,14 @@ public class AmazonS3Impl implements AmazonS3
                 if (LOG.isDebugEnabled())
                     {
                     LOG.debug("Received status line: "+statusLine);
-                    final Header[] responseHeaders = 
-                        method.getResponseHeaders();
+                    final Header[] responseHeaders = method.getResponseHeaders();
                     printHeaders(responseHeaders);
                     
                     // S3 likely returned some sort of error in the response
                     // body, so print it out.
                     final String response = method.getResponseBodyAsString();
                     LOG.debug("Got response: "+response);
+                    throw new IOException("Error accessing S3");
                     }
                 }
             else
