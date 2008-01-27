@@ -37,6 +37,22 @@
             </dependency>
         </dependencies>
     <build>
+    <plugins>
+        <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                <archive>
+                    <manifest>
+                        <mainClass>org.lastbamboo.common.amazon.s3.Launcher</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+
 <!--
         <plugins>
             <plugin>

@@ -187,18 +187,14 @@ public class AmazonS3Impl implements AmazonS3
             if (code < 200 || code > 299)
                 {
                 LOG.warn("Did not receive 200 level response: "+statusLine);
-                if (LOG.isDebugEnabled())
-                    {
-                    LOG.debug("Received status line: "+statusLine);
-                    final Header[] responseHeaders = method.getResponseHeaders();
-                    printHeaders(responseHeaders);
-                    
-                    // S3 likely returned some sort of error in the response
-                    // body, so print it out.
-                    final String response = method.getResponseBodyAsString();
-                    LOG.debug("Got response: "+response);
-                    throw new IOException("Error accessing S3");
-                    }
+                final Header[] responseHeaders = method.getResponseHeaders();
+                printHeaders(responseHeaders);
+                
+                // S3 likely returned some sort of error in the response
+                // body, so print it out.
+                final String response = method.getResponseBodyAsString();
+                LOG.warn("Got response: "+response);
+                throw new IOException("Error accessing S3");
                 }
             else
                 {
