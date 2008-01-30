@@ -112,7 +112,11 @@ public class AmazonS3Impl implements AmazonS3
         try
             {
             final InputStream is = new FileInputStream(file);
+            
+            // TODO: This should really use FileRequestEntity because otherwise it loads
+            // the whole file into memory to determine the content length.
             final RequestEntity re = new InputStreamRequestEntity(is);
+            
             put(bucketName+"/"+file.getName(), re, true);
             }
         catch (final FileNotFoundException e)
