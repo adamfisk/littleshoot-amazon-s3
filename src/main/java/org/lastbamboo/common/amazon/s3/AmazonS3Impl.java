@@ -11,6 +11,7 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.StatusLine;
+import org.apache.commons.httpclient.methods.FileRequestEntity;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PutMethod;
@@ -32,19 +33,42 @@ public class AmazonS3Impl implements AmazonS3
 
     private static final Log LOG = LogFactory.getLog(AmazonS3Impl.class);
     
-    private final String m_accessKeyId;
-    private final String m_secretAccessKey;
+    private String m_accessKeyId;
+    private String m_secretAccessKey;
 
     /**
      * Creates a new S3 instance.
      * 
-     * @param accessKeyId Your Amazon S3 access key ID.
-     * @param secretAccessKey Your Amazon S3 secret key.
+     * @throws IOException If the props file can't be found or keys can't be read. 
      */
-    public AmazonS3Impl(final String accessKeyId, final String secretAccessKey)
+    public AmazonS3Impl() throws IOException
         {
-        this.m_accessKeyId = accessKeyId;
-        this.m_secretAccessKey = secretAccessKey;
+        
+        if (!AmazonWsUtils.hasPropsFile())
+            {
+            System.out.println("No properties file found");
+            throw new IOException("No props file");
+            }
+        try
+            {
+            this.m_accessKeyId = AmazonWsUtils.getAccessKeyId();
+            }
+        catch (final IOException e)
+            {
+            System.out.println("Found the properties file, but there's no access key ID in " +
+                    "the form: accessKeyId=");
+            throw e;
+            }
+        try
+            {
+            this.m_secretAccessKey = AmazonWsUtils.getAccessKey();
+            }
+        catch (final IOException e)
+            {
+            System.out.println("Found the properties file, but there's no secret access key " +
+                    "in the form: accessKey=");
+            throw e;
+            }
         configureDns();
         }
     
@@ -63,8 +87,9 @@ public class AmazonS3Impl implements AmazonS3
     public void getFile(final String bucketName, final String fileName, 
         final File target) throws IOException
         {
-        final String fullPath = 
-            this.m_accessKeyId + "-" + bucketName + "/" + fileName;
+        //final String fullPath = 
+            //this.m_accessKeyId + "-" + bucketName + "/" + fileName;
+        final String fullPath = bucketName + "/" + fileName;
         final String url = "https://s3.amazonaws.com:443/" + fullPath;
         LOG.debug("Getting file from URL: "+url);
         final GetMethod method = new GetMethod(url);
@@ -78,8 +103,9 @@ public class AmazonS3Impl implements AmazonS3
     public void getPublicFile(final String bucketName, final String fileName, 
         final File target) throws IOException
         {
-        final String fullPath = 
-            this.m_accessKeyId + "-" + bucketName + "/" + fileName;
+        //final String fullPath = 
+            //this.m_accessKeyId + "-" + bucketName + "/" + fileName;
+        final String fullPath = bucketName + "/" + fileName;
         final String url = "http://s3.amazonaws.com/" + fullPath;
         LOG.debug("Getting file from URL: "+url);
         final GetMethod method = new GetMethod(url);
@@ -96,8 +122,8 @@ public class AmazonS3Impl implements AmazonS3
         {
         try
             {
-            final InputStream is = new FileInputStream(file);
-            final RequestEntity re = new InputStreamRequestEntity(is);
+            //final InputStream is = new FileInputStream(file);
+            final RequestEntity re = new FileRequestEntity(file, "");//new InputStreamRequestEntity(is);
             put(bucketName+"/"+file.getName(), re, false);
             }
         catch (final FileNotFoundException e)
@@ -133,7 +159,8 @@ public class AmazonS3Impl implements AmazonS3
     private void put(final String relativePath, final RequestEntity re, 
         final boolean isPublic) throws IOException
         {
-        final String fullPath = this.m_accessKeyId + "-"+relativePath;
+        //final String fullPath = this.m_accessKeyId + "-"+relativePath;
+        final String fullPath = relativePath;
         final String url = "https://s3.amazonaws.com:443/" + fullPath;
         LOG.debug("Sending to URL: "+url);
         final PutMethod method = new PutMethod(url);

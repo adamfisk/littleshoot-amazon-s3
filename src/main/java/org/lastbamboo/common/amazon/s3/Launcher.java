@@ -16,12 +16,43 @@ public class Launcher
      */
     public static void main (final String[] args)
         {
+        if (args.length < 1)
+            {
+            throw new IllegalArgumentException("Need at least a method"); 
+            }
+        
+        if (args[0].equals("put"))
+            {
+            processPut(args);
+            }
+        
+        else if (args[0].equals("get"))
+            {
+            
+            }
+        else if (args[0].equals("list"))
+            {
+            
+            }
+        }
+    
+    private static void processPut(final String[] args)
+        {
         if (args.length < 4)
             {
-            System.out.println("Usage: run.sh $AWS_ACCESS_KEY_ID $AWS_ACCESS_KEY bucketName filePath");
+            throw new IllegalArgumentException("Too few args.");
+            }
+        
+        final AmazonS3 s3;
+        try
+            {
+            s3 = new AmazonS3Impl();
+            }
+        catch (final IOException e)
+            {
+            System.out.println("Error loading props files...");
             return;
             }
-        final AmazonS3 s3 = new AmazonS3Impl(args[0], args[1]);
         final String bucketName = args[2];
         try
             {
@@ -39,14 +70,35 @@ public class Launcher
             System.out.println("File not found: "+fileString);
             return;
             }
-        try
+        
+        final String restrictions = args[1];
+        if (restrictions.trim().equalsIgnoreCase("public"))
             {
-            s3.putPublicFile(bucketName, file);
+            try
+                {
+                s3.putPublicFile(bucketName, file);
+                }
+            catch (final IOException e)
+                {
+                System.out.println("Could not upload file.  Error was: ");
+                e.printStackTrace();
+                }
             }
-        catch (IOException e)
+        else if (restrictions.trim().equalsIgnoreCase("private"))
             {
-            System.out.println("Could not upload file.  Error was: ");
-            e.printStackTrace();
+            try
+                {
+                s3.putFile(bucketName, file);
+                }
+            catch (final IOException e)
+                {
+                System.out.println("Could not upload file.  Error was: ");
+                e.printStackTrace();
+                }
+            }
+        else
+            {
+            throw new IllegalArgumentException("Must specify public or private...");
             }
         }
     }

@@ -27,7 +27,7 @@ public class AmazonS3Test extends TestCase
         final String accessKeyId = args[0];
         final String secretAccessKey = args[1];
         
-        final AmazonS3 amazon = new AmazonS3Impl(accessKeyId, secretAccessKey);
+        final AmazonS3 amazon = new AmazonS3Impl();
        
         amazon.createBucket("installers");
         
