@@ -7,20 +7,32 @@ die()
 }
 
 installDir=/usr/local/littleshoot
-echo "Copying files to $installDir."
-mkdir $installDir || die "Could not make install dir"
-cp * $installDir/
+if [ -e "$installDir" ]; then
+    echo "Install dir exists.  Overwriting files."
+else
+    sudo mkdir $installDir || die "Could not make install dir"
+fi
 
-link()
+echo "Copying files to $installDir."
+sudo cp shoot* README $installDir/
+
+function link
 {
 for x
 do 
-    echo "Linking $x"
-    ln -s $x /usr/local/bin/$x || die "Could not link file $x."
+    link=/usr/local/bin/$x
+    echo "Creating link: $link"
+    if [ -L $link ]; then
+        echo "Link exists.  Overwriting."
+        sudo rm $link
+    fi
+    sudo ln -s $x $link || die "Could not link file $x."
 done
 }
 
 pushd $installDir
-link *
+
+echo "Linking files in /usr/local/bin"
+link shoot*
 popd
 
