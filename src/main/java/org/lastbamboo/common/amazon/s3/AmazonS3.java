@@ -19,6 +19,15 @@ public interface AmazonS3
      * connection to S3 or could not understand the HTTP exchange.
      */
     void createBucket(String name) throws IOException;
+    
+    /**
+     * Deletes the bucket with the specified name.
+     * 
+     * @param bucketName The name of the bucket to delete.
+     * @throws IOException If we could either could not make a network 
+     * connection to S3 or could not understand the HTTP exchange.
+     */
+    void deleteBucket(String bucketName) throws IOException;
 
     /**
      * Uploads a file to S3.
@@ -28,7 +37,7 @@ public interface AmazonS3
      * @throws IOException If we could either could not make a network 
      * connection to S3 or could not understand the HTTP exchange.
      */
-    void putFile(String bucketName, File file) throws IOException;
+    void putPrivateFile(String bucketName, File file) throws IOException;
 
     /**
      * Uploads a file to S3 that will be publicly available.
@@ -50,7 +59,7 @@ public interface AmazonS3
      * @throws IOException If we could either could not make a network 
      * connection to S3 or could not understand the HTTP exchange.
      */
-    void getFile(String bucketName, String fileName, File target)
+    void getPrivateFile(String bucketName, String fileName, File target)
         throws IOException;
     
     /**
@@ -85,4 +94,24 @@ public interface AmazonS3
     void normalizeRequest(final HttpMethod method, 
         final String methodString, final String fullPath, 
         final boolean addPublicHeader, final boolean useAuth);
+
+    /**
+     * Deletes The specified file.
+     * 
+     * @param bucketName The bucket.
+     * @param fileName The file name.
+     * @throws IOException If we could either could not make a network 
+     * connection to S3 or could not understand the HTTP exchange.
+     */
+    void delete(String bucketName, String fileName) throws IOException;
+
+    /**
+     * List all the files in the bucket.
+     * 
+     * @param bucketName The name of the bucket to list.
+     * @throws IOException If we could either could not make a network 
+     * connection to S3 or could not understand the HTTP exchange.
+     */
+    void listBucket(String bucketName) throws IOException;
+
     }

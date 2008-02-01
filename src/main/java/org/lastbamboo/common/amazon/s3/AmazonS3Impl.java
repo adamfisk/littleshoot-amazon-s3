@@ -1,28 +1,41 @@
 package org.lastbamboo.common.amazon.s3;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Security;
+import java.text.DecimalFormat;
+import java.util.Formatter;
+
+import javax.swing.text.NumberFormatter;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpMethodRetryHandler;
 import org.apache.commons.httpclient.StatusLine;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.FileRequestEntity;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.lastbamboo.common.amazon.stack.AmazonWsUtils;
+import org.lastbamboo.common.util.DateUtils;
 import org.lastbamboo.common.util.FileInputStreamHandler;
-import org.lastbamboo.common.util.HttpUtils;
 import org.lastbamboo.common.util.InputStreamHandler;
 import org.lastbamboo.common.util.NoOpInputStreamHandler;
+import org.lastbamboo.common.util.StringUtils;
+import org.lastbamboo.common.util.xml.XPathUtils;
+import org.lastbamboo.common.util.xml.XmlUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -43,7 +56,6 @@ public class AmazonS3Impl implements AmazonS3
      */
     public AmazonS3Impl() throws IOException
         {
-        
         if (!AmazonWsUtils.hasPropsFile())
             {
             System.out.println("No properties file found");
@@ -84,7 +96,7 @@ public class AmazonS3Impl implements AmazonS3
             Integer.toString(cacheSeconds));
         }
     
-    public void getFile(final String bucketName, final String fileName, 
+    public void getPrivateFile(final String bucketName, final String fileName, 
         final File target) throws IOException
         {
         //final String fullPath = 
@@ -117,43 +129,132 @@ public class AmazonS3Impl implements AmazonS3
         sendRequest(method, handler);
         }
     
-    public void putFile(final String bucketName, final File file) 
+    public void putPrivateFile(final String bucketName, final File file) 
         throws IOException
         {
-        try
-            {
-            //final InputStream is = new FileInputStream(file);
-            final RequestEntity re = new FileRequestEntity(file, "");//new InputStreamRequestEntity(is);
-            put(bucketName+"/"+file.getName(), re, false);
-            }
-        catch (final FileNotFoundException e)
-            {
-            LOG.error("File Not Found: "+file, e);
-            }
+        putFile(bucketName, file, false);
         }
     
     public void putPublicFile(final String bucketName, final File file) 
         throws IOException
         {
+        putFile(bucketName, file, true);
+        }
+
+    private void putFile(final String bucketName, final File file, final boolean makePublic) 
+        throws IOException
+        {
         try
             {
-            final InputStream is = new FileInputStream(file);
-            
-            // TODO: This should really use FileRequestEntity because otherwise it loads
-            // the whole file into memory to determine the content length.
-            final RequestEntity re = new InputStreamRequestEntity(is);
-            
-            put(bucketName+"/"+file.getName(), re, true);
+            final RequestEntity re = new FileRequestEntity(file, "");
+            put(bucketName+"/"+file.getName(), re, makePublic);
             }
         catch (final FileNotFoundException e)
             {
             LOG.error("File Not Found: "+file, e);
             }
         }
-
+        
     public void createBucket(final String bucketName) throws IOException
         {
         put(bucketName, null, false);
+        }
+
+    public void listBucket(final String bucketName) throws IOException
+        {
+        final String fullPath = bucketName;
+        final String url = "https://s3.amazonaws.com:443/" + fullPath;
+        LOG.debug("Sending to URL: "+url);
+        final GetMethod method = new GetMethod(url);
+        
+        final InputStreamHandler handler = new InputStreamHandler()
+            {
+            public void handleInputStream(final InputStream is) throws IOException
+                {
+                // Just convert it to a string for easier debugging.
+                final String xmlBody = IOUtils.toString(is);
+                try
+                    {
+                    final XPathUtils xPath = XPathUtils.newXPath(xmlBody);
+                    final String namePath = "/ListBucketResult/Contents/Key"; 
+                    final String lastModifiedPath = "/ListBucketResult/Contents/LastModified";
+                    final String sizePath = "/ListBucketResult/Contents/Size";
+                    final NodeList nameNodes = xPath.getNodes(namePath);
+                    final NodeList lmNodes = xPath.getNodes(lastModifiedPath);
+                    final NodeList sizeNodes = xPath.getNodes(sizePath);
+                    
+                    for (int i = 0; i < nameNodes.getLength(); i++)
+                        {
+                        final Node nameNode = nameNodes.item(i);
+                        final String name = nameNode.getTextContent();
+                        final Node lmNode = lmNodes.item(i);
+                        final String lm = lmNode.getTextContent();
+                        final Node sizeNode = sizeNodes.item(i);
+                        final String sizeString = sizeNode.getTextContent();
+                        
+                        final int sizeInt = Integer.valueOf(sizeString);
+                        final double sizeK = sizeInt/1024;
+                        final double sizeMb = sizeK/1024;
+                        
+                        final DecimalFormat df = new DecimalFormat("###0.##");
+                        final String dateString = DateUtils.prettyS3Date(lm);
+                        final StringBuilder sb = new StringBuilder();
+                        sb.append(name);
+                        
+                        int whiteSpace = 30 - name.length();
+                        for (int j = 0; j < whiteSpace; j++)
+                            {
+                            sb.append(" ");
+                            }
+                        
+                        sb.append(dateString);
+                        final String formattedSize = df.format(sizeMb);
+                        int extraSpace = 10 - formattedSize.length();
+                        for (int j = 0; j < extraSpace; j++)
+                            {
+                            sb.append(" ");
+                            }
+                        sb.append(formattedSize);
+                        sb.append(" MB");
+                        System.out.println(sb.toString());
+                        }
+                    }
+                catch (final SAXException e1)
+                    {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                    }
+                catch (final XPathExpressionException e)
+                    {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    }
+                }
+            };
+        normalizeRequest(method, "GET", fullPath, false, true);
+        sendRequest(method, handler);
+        }
+        
+    public void deleteBucket(final String bucketName) throws IOException
+        {
+        delete(bucketName);
+        }
+    
+    public void delete(final String bucketName, final String fileName) throws IOException
+        {
+        delete(bucketName+"/"+fileName);
+        }
+
+    private void delete(final String relativePath) throws IOException
+        {
+        final String fullPath = relativePath;
+        final String url = "https://s3.amazonaws.com:443/" + fullPath;
+        LOG.debug("Sending to URL: "+url);
+        final DeleteMethod method = new DeleteMethod(url);
+        
+        final InputStreamHandler handler = new NoOpInputStreamHandler();
+        normalizeRequest(method, "DELETE", fullPath, false, true);
+        sendRequest(method, handler);
         }
     
     private void put(final String relativePath, final RequestEntity re, 
@@ -177,14 +278,13 @@ public class AmazonS3Impl implements AmazonS3
         final InputStreamHandler handler = new NoOpInputStreamHandler();
         normalizeRequest(method, "PUT", fullPath, isPublic, true);
         sendRequest(method, handler);
-        
         }
 
     public void normalizeRequest(final HttpMethod method, 
         final String methodString, final String fullPath, 
         final boolean addPublicHeader, final boolean useAuth)
         {
-        final Header dateHeader = new Header("Date", HttpUtils.createHttpDate());
+        final Header dateHeader = new Header("Date", DateUtils.createHttpDate());
         method.setRequestHeader(dateHeader);
         if (addPublicHeader)
             {
@@ -203,7 +303,34 @@ public class AmazonS3Impl implements AmazonS3
         final InputStreamHandler handler) throws IOException
         {
         final HttpClient client = new HttpClient();
-        
+        // We customize the retry handler because AWS apparently disconnects a lot.
+        final HttpMethodRetryHandler retryHandler = 
+            new HttpMethodRetryHandler()
+            {
+
+            public boolean retryMethod(final HttpMethod method, 
+                final IOException ioe, final int retries)
+                {
+                if (retries < 40)
+                    {
+                    System.out.println("Did not connect.  Received: ");
+                    ioe.printStackTrace();
+                    try
+                        {
+                        Thread.sleep(retries * 200);
+                        }
+                    catch (InterruptedException e)
+                        {
+                        }
+                    return true;
+                    }
+                return false;
+                }
+            
+            };
+            
+        method.getParams().setParameter(
+            HttpMethodParams.RETRY_HANDLER, retryHandler);
         if (LOG.isDebugEnabled())
             {
             printHeaders(method.getRequestHeaders());
@@ -223,7 +350,9 @@ public class AmazonS3Impl implements AmazonS3
                 
                 // S3 likely returned some sort of error in the response
                 // body, so print it out.
-                final String response = method.getResponseBodyAsString();
+                final InputStream is = method.getResponseBodyAsStream();
+                final String response = IOUtils.toString(is);
+                IOUtils.closeQuietly(is);
                 LOG.warn("Got response: "+response);
                 throw new IOException("Error accessing S3");
                 }
@@ -231,6 +360,7 @@ public class AmazonS3Impl implements AmazonS3
                 {
                 final InputStream body = method.getResponseBodyAsStream();
                 handler.handleInputStream(body);
+                
                 }
             }
         finally
