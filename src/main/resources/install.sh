@@ -20,17 +20,24 @@ function link
 {
 for x
 do 
-    link=/usr/local/bin/$x
-    echo "Creating link: $link"
-    if [ -L $link ]; then
+    cd /usr/local/bin
+    #link=/usr/local/bin/$x
+    echo "Creating link: $x"
+    if [ -L $x ]; then
         echo "Link exists.  Overwriting."
-        sudo rm $link
+        sudo rm $x
     fi
-    sudo ln -s $x $link || die "Could not link file $x."
+    echo "Running ln -s $x $link"
+    
+    sudo ln -s $installDir/$x $x || die "Could not link file $x."
+    newOwner=$USER
+    sudo chown $newOwner $installDir/$x
+    sudo chown -h $newOwner $x
 done
 }
 
 pushd $installDir
+#pushd /usr/local/bin
 
 echo "Linking files in /usr/local/bin"
 link shoot*
