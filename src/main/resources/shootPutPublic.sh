@@ -1,3 +1,3 @@
-#!/bin/sh
-java -jar /usr/local/bin/s3.jar putPublic $*
+#!/usr/bin/env sh
+java -jar /usr/local/littleshoot/s3.jar putPublic $*
 exit

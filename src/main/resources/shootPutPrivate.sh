@@ -1,3 +1,3 @@
-#!/bin/sh
-java -jar /usr/local/bin/s3.jar putPrivate $*
+#!/usr/bin/env sh
+java -jar /usr/local/littleshoot/s3.jar putPrivate $*
 exit

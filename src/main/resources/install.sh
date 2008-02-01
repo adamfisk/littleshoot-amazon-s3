@@ -14,7 +14,7 @@ else
 fi
 
 echo "Copying files to $installDir."
-sudo cp shoot* README $installDir/
+sudo cp * $installDir/
 
 function link
 {
@@ -41,5 +41,6 @@ pushd $installDir
 
 echo "Linking files in /usr/local/bin"
 link shoot*
+#link *.jar
 popd
 
