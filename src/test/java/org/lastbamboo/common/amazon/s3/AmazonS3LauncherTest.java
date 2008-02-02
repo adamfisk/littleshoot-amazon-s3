@@ -13,7 +13,7 @@ public class AmazonS3LauncherTest
         //System.out.println("\n\n");
         
         //System.out.println(SystemUtils.USER_DIR);
-        //Launcher.main(new String[] {"-ls", "littleshoot"});
+        Launcher.main(new String[] {"-ls", "littleshoot"});
         //Launcher.main(new String[] {"-p bucket test"});
         }
     }

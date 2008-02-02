@@ -106,15 +106,17 @@ public interface AmazonS3
     void delete(String bucketName, String fileName) throws IOException;
 
     /**
-     * Deletes all of the files in the specified bucket matching the specified regular
-     * expression.
+     * Deletes all of the files in the specified bucket matching the specified pattern.  Far
+     * from allowing full regular expressions, this just simply allows the star expander
+     * at the beginning or end of the file name, or both, such as "*.txt*, "file*" or *ile*".
      * 
      * @param bucketName The bucket.
-     * @param regEx The regular expression to match.
+     * @param file The file(s) to delete.  This can be of the form "*.txt*, "file*" or *ile*", 
+     * for example.
      * @throws IOException If we could either could not make a network 
      * connection to S3 or could not understand the HTTP exchange.
      */
-    public void deleteRegEx(String bucketName, String regEx) throws IOException;
+    public void deleteStar(String bucketName, String file) throws IOException;
 
     /**
      * List all the files in the bucket.

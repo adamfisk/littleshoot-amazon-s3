@@ -5,6 +5,7 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.UnknownHostException;
 import java.security.Security;
 import java.text.DecimalFormat;
 import java.util.Collection;
@@ -198,13 +199,13 @@ public class AmazonS3Impl implements AmazonS3
         final String url = "https://s3.amazonaws.com:443/" + fullPath;
         LOG.debug("Sending to URL: "+url);
         final GetMethod method = new GetMethod(url);
-        
         final InputStreamHandler handler = new InputStreamHandler()
             {
             public void handleInputStream(final InputStream is) throws IOException
                 {
                 // Just convert it to a string for easier debugging.
                 final String xmlBody = IOUtils.toString(is);
+                //XmlUtils.printDoc(xmlBody);
                 try
                     {
                     final XPathUtils xPath = XPathUtils.newXPath(xmlBody);
@@ -277,7 +278,7 @@ public class AmazonS3Impl implements AmazonS3
         delete(bucketName+"/"+fileName);
         }
     
-    public void deleteRegEx(final String bucketName, final String regex) 
+    public void deleteStar(final String bucketName, final String regex) 
         throws IOException
         {
         final String fullPath = bucketName;
@@ -425,6 +426,10 @@ public class AmazonS3Impl implements AmazonS3
             public boolean retryMethod(final HttpMethod method, 
                 final IOException ioe, final int retries)
                 {
+                if (ioe instanceof UnknownHostException)
+                    {
+                    return false;
+                    }
                 if (retries < 40)
                     {
                     System.out.println("Did not connect.  Received: ");
@@ -458,7 +463,7 @@ public class AmazonS3Impl implements AmazonS3
             final int code = statusLine.getStatusCode();
             if (code < 200 || code > 299)
                 {
-                LOG.warn("Did not receive 200 level response: "+statusLine);
+                LOG.debug("Did not receive 200 level response: "+statusLine);
                 final Header[] responseHeaders = method.getResponseHeaders();
                 printHeaders(responseHeaders);
                 
@@ -467,14 +472,15 @@ public class AmazonS3Impl implements AmazonS3
                 final InputStream is = method.getResponseBodyAsStream();
                 final String response = IOUtils.toString(is);
                 IOUtils.closeQuietly(is);
-                LOG.warn("Got response: "+response);
+                LOG.debug("Got response: "+response);
+                
+                // TODO: Send this to the stream handler.
                 throw new IOException("Error accessing S3");
                 }
             else
                 {
                 final InputStream body = method.getResponseBodyAsStream();
                 handler.handleInputStream(body);
-                
                 }
             }
         finally

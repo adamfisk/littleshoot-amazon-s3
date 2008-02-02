@@ -50,30 +50,26 @@ public class Launcher
                 "Adds the specified file to S3 as a private file.");
             add(putPrivate, bucketFile, 2, new PutPrivate());
             
-            final Option putPublic = new Option("pub", "putpublic", true, 
+            final Option putPublic = new Option("putp", "putpublic", true, 
                 "Adds the specified file to S3 as publicly readable.");
             add(putPublic, bucketFile, 2, new PutPublic());
 
-            final Option putAllPrivate = new Option("putd", "putdir", true, 
+            final Option putAllPrivate = new Option("puta", "putall", true, 
                 "Adds all files in the specified directory as private files.");
             add(putAllPrivate, bucketDir, 2, new PutAllPrivate());
             
-            final Option putAllPublic = new Option("pubd", "putdirpublic", true, 
-                "Adds all files in the specified directory as public files.");
+            final Option putAllPublic = new Option("putap", "putallpublic", true, 
+                "Adds all files in the specified directory as public files.  Does not add " +
+                "directories or recurse.");
             add(putAllPublic, bucketDir, 2, new PutAllPublic());
             
             final Option delete = new Option("rm", "delete", true, 
-                "Removes the file in the specified bucket with the specified name.");
+                "Removes the file in the specified bucket with the specified name.  Note that " +
+                "a '*' at the beginning or the end acts as a wildcard.  For example," +
+                "'aws -rm littleshoot *.sh' removes all .sh files in the littleshoot " +
+                "bucket.  Use the star functionality with some caution, of course.  It only works" +
+                " at the beginning or end of the file name.");
             add(delete, bucketFile, 2, new Delete());
-            
-            final Option deleteRegEx = new Option("rmr", "deleteall", true, 
-                "Removes all the files of the form '*endFileName' or 'startFileName*'.  " +
-                "For example,                                                                        " +
-                "aws -rmr littleshoot *.sh      " +
-                "                                                                                                 " +
-                "removes all .sh files in the littleshoot " +
-                "bucket.  Use with caution!");
-            add(deleteRegEx, bucketFile, 2, new DeleteRegEx());
             
             final Option deleteBucket = new Option("rmb", "deletebucket", true, 
                 "Removes the specified bucket if it's empty.");
@@ -103,9 +99,12 @@ public class Launcher
                         processor.processArgs(values);
                         }
                     }
-                if (cmd.hasOption("h"))
+                if (args.length == 0 || cmd.hasOption("h"))
                     {
                     final HelpFormatter formatter = new HelpFormatter();
+                    formatter.setLeftPadding(2);
+                    formatter.setDescPadding(2);
+                    //formatter.setWidth(80);
                     formatter.printHelp("aws", m_options);
                     }
                 }
@@ -184,25 +183,8 @@ public class Launcher
                 }
             }
         }
+
     private static class Delete implements ArgsProcessor
-        {
-        public void processArgs(final String[] args)
-            {
-            final AmazonS3 s3 = setup(args, 2, "bucketName fileName");
-            final String bucketName = args[0];
-            final String file = args[1];
-            try
-                {
-                s3.delete(bucketName, file);
-                }
-            catch (final IOException e)
-                {
-                System.out.println("Could not delete file.");
-                e.printStackTrace();
-                }
-            }    
-        }
-    private static class DeleteRegEx implements ArgsProcessor
         {
         public void processArgs(final String[] args)
             {
@@ -211,7 +193,7 @@ public class Launcher
             final String regEx = args[1];
             try
                 {
-                s3.deleteRegEx(bucketName, regEx);
+                s3.deleteStar(bucketName, regEx);
                 }
             catch (final IOException e)
                 {
@@ -332,7 +314,7 @@ public class Launcher
         {
         public void processArgs(final String[] args)
             {
-            final AmazonS3 s3 = setup(args, 2, "bucketName");
+            final AmazonS3 s3 = setup(args, 1, "bucketName");
             final String bucketName = args[0];
             try
                 {
@@ -350,7 +332,7 @@ public class Launcher
         {
         public void processArgs(final String[] args)
             {
-            final AmazonS3 s3 = setup(args, 2, "bucketName");
+            final AmazonS3 s3 = setup(args, 1, "bucketName");
             final String bucketName = args[0];
             try
                 {
@@ -392,8 +374,9 @@ public class Launcher
                 sb.append(arg);
                 sb.append(" ");
                 }
-            //System.out.println(sb);
-            throw new IllegalArgumentException(sb.toString());
+            System.err.println(sb);
+            System.exit(1);
+            //throw new IllegalArgumentException(sb.toString());
             }
         }
     }
