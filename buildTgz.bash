@@ -21,7 +21,7 @@ rm -rf $BUILD_NAME
 mkdir $BUILD_NAME
 
 cp target/*jar-with-dependencies.jar $BUILD_NAME/s3.jar || die "Could not copy jar"
-#cp src/main/resources/*.sh $BUILD_NAME
+cp src/main/resources/*.sh $BUILD_NAME
 #cp src/main/resources/sss $BUILD_NAME
 cp src/main/resources/aws $BUILD_NAME
 cp src/main/resources/README $BUILD_NAME
