@@ -275,10 +275,11 @@ public class AmazonS3Impl implements AmazonS3
     
     public void delete(final String bucketName, final String fileName) throws IOException
         {
+        System.out.println("Deleting "+fileName);
         delete(bucketName+"/"+fileName);
         }
     
-    public void deleteStar(final String bucketName, final String regex) 
+    public void deleteStar(final String bucketName, final String fileName) 
         throws IOException
         {
         final String fullPath = bucketName;
@@ -288,22 +289,21 @@ public class AmazonS3Impl implements AmazonS3
         final Collection<String> filesToDelete = new LinkedList<String> ();
         final GetMethod method = new GetMethod(url);
         boolean matchStartTemp = false;
-        String toMatchTemp = regex;
+        String toMatchTemp = fileName;
         boolean matchEndTemp = false;
         
-        if (!regex.endsWith("*") && !regex.startsWith("*"))
+        if (!fileName.endsWith("*") && !fileName.startsWith("*"))
             {
-            System.out.println("Note: Not using * expansion.  Trying to delete: "+regex);
-            delete(bucketName, regex);
+            delete(bucketName, fileName);
             return;
             }
-        if (regex.endsWith("*"))
+        if (fileName.endsWith("*"))
             {
             matchStartTemp = true;
-            toMatchTemp = toMatchTemp.substring(0, regex.length()-1);
+            toMatchTemp = toMatchTemp.substring(0, fileName.length()-1);
             LOG.debug("Checking for files that start with: "+toMatchTemp);
             }
-        if (regex.startsWith("*"))
+        if (fileName.startsWith("*"))
             {
             matchEndTemp = true;
             toMatchTemp = toMatchTemp.substring(1);
@@ -354,9 +354,9 @@ public class AmazonS3Impl implements AmazonS3
         normalizeRequest(method, "GET", fullPath, false, true);
         sendRequest(method, handler);
         
-        for (final String fileName : filesToDelete)
+        for (final String fileKey : filesToDelete)
             {
-            delete(bucketName, fileName);
+            delete(bucketName, fileKey);
             }
         }
 

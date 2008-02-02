@@ -5,11 +5,11 @@ To use the automated "installer", simply run:
 
 $ ./install.sh
 
-This will move the scripts and accompanying jar file to /usr/local/littleshoot
+This will move the aws script and accompanying jar file to /usr/local/littleshoot
 and will add symbolic links in /usr/local/bin to the scripts in 
 /usr/local/littleshoot.  It will also prompt you for your AWS access key ID
 and AWS secret access key, and it will automatically create a littleshoot
-properties file for you in /etc/littleshoot/littleshoot.properties.  This
+properties file for you in ~/.littleshoot/littleshoot.properties.  This
 is just a properties file with your AWS key information.  LittleShoot reads
 it from a file to avoid it being readable with ps.     
 

@@ -101,17 +101,22 @@ public class Launcher
                     }
                 if (args.length == 0 || cmd.hasOption("h"))
                     {
-                    final HelpFormatter formatter = new HelpFormatter();
-                    formatter.setLeftPadding(2);
-                    formatter.setDescPadding(2);
-                    //formatter.setWidth(80);
-                    formatter.printHelp("aws", m_options);
+                    printHelp();
                     }
                 }
             catch (final ParseException e)
                 {
                 System.err.println(e.getMessage());
                 }
+            }
+        
+        private void printHelp()
+            {
+            final HelpFormatter formatter = new HelpFormatter();
+            formatter.setLeftPadding(2);
+            formatter.setDescPadding(2);
+            //formatter.setWidth(80);
+            formatter.printHelp("aws", m_options);
             }
         }
 
@@ -188,7 +193,9 @@ public class Launcher
         {
         public void processArgs(final String[] args)
             {
-            final AmazonS3 s3 = setup(args, 2, "bucketName name where name is has a '*' prefix or suffix, or both");
+            final AmazonS3 s3 = 
+                setup(args, 2, 
+                    "bucketName name where name is has a '*' prefix or suffix, or both");
             final String bucketName = args[0];
             final String regEx = args[1];
             try
@@ -364,7 +371,6 @@ public class Launcher
         {
         if (args.length < length)
             {
-            //System.out.println("Usage: sss"+args[0] +" "+message);
             final StringBuilder sb = new StringBuilder();
             sb.append("Too few args.  Expected "+length);
             sb.append(" but found " +args.length); 
@@ -376,7 +382,7 @@ public class Launcher
                 }
             System.err.println(sb);
             System.exit(1);
-            //throw new IllegalArgumentException(sb.toString());
             }
         }
+
     }
