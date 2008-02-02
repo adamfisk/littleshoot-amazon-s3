@@ -41,6 +41,8 @@ pushd $installDir
 
 echo "Linking files in /usr/local/bin"
 link shoot*
+link sss
+link s3
 #link *.jar
 popd
 

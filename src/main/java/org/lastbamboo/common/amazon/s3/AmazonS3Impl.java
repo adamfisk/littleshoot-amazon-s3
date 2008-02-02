@@ -1,14 +1,15 @@
 package org.lastbamboo.common.amazon.s3;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Security;
 import java.text.DecimalFormat;
-import java.util.Formatter;
+import java.util.Collection;
+import java.util.LinkedList;
 
-import javax.swing.text.NumberFormatter;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.httpclient.Header;
@@ -30,9 +31,7 @@ import org.lastbamboo.common.util.DateUtils;
 import org.lastbamboo.common.util.FileInputStreamHandler;
 import org.lastbamboo.common.util.InputStreamHandler;
 import org.lastbamboo.common.util.NoOpInputStreamHandler;
-import org.lastbamboo.common.util.StringUtils;
 import org.lastbamboo.common.util.xml.XPathUtils;
-import org.lastbamboo.common.util.xml.XmlUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -135,12 +134,45 @@ public class AmazonS3Impl implements AmazonS3
         putFile(bucketName, file, false);
         }
     
+    public void putPrivateDir(final String bucketName, final File dir) throws IOException
+        {
+        
+        final FileFilter filter = new FileFilter()
+            {
+            public boolean accept(final File file)
+                {
+                return file.isFile();
+                }
+            };
+        final File[] files = dir.listFiles(filter);
+        for (final File file : files)
+            {
+            putPrivateFile(bucketName, file);
+            }
+        }
+    
     public void putPublicFile(final String bucketName, final File file) 
         throws IOException
         {
         putFile(bucketName, file, true);
         }
 
+    public void putPublicDir(final String bucketName, final File dir) throws IOException
+        {
+        final FileFilter filter = new FileFilter()
+            {
+            public boolean accept(final File file)
+                {
+                return file.isFile();
+                }
+            };
+        final File[] files = dir.listFiles(filter);
+        for (final File file : files)
+            {
+            putPublicFile(bucketName, file);
+            }
+        }
+        
     private void putFile(final String bucketName, final File file, final boolean makePublic) 
         throws IOException
         {
@@ -159,7 +191,7 @@ public class AmazonS3Impl implements AmazonS3
         {
         put(bucketName, null, false);
         }
-
+        
     public void listBucket(final String bucketName) throws IOException
         {
         final String fullPath = bucketName;
@@ -192,7 +224,7 @@ public class AmazonS3Impl implements AmazonS3
                         final Node sizeNode = sizeNodes.item(i);
                         final String sizeString = sizeNode.getTextContent();
                         
-                        final int sizeInt = Integer.valueOf(sizeString);
+                        final int sizeInt = Integer.parseInt(sizeString);
                         final double sizeK = sizeInt/1024;
                         final double sizeMb = sizeK/1024;
                         
@@ -201,33 +233,33 @@ public class AmazonS3Impl implements AmazonS3
                         final StringBuilder sb = new StringBuilder();
                         sb.append(name);
                         
-                        int whiteSpace = 30 - name.length();
-                        for (int j = 0; j < whiteSpace; j++)
-                            {
-                            sb.append(" ");
-                            }
-                        
+                        appendSpace (sb, 30 - name.length());
                         sb.append(dateString);
+                        appendSpace (sb, 12 - dateString.length());
+                        
                         final String formattedSize = df.format(sizeMb);
-                        int extraSpace = 10 - formattedSize.length();
-                        for (int j = 0; j < extraSpace; j++)
-                            {
-                            sb.append(" ");
-                            }
+                        appendSpace (sb, 10 - formattedSize.length());
+
                         sb.append(formattedSize);
                         sb.append(" MB");
                         System.out.println(sb.toString());
                         }
                     }
-                catch (final SAXException e1)
+                catch (final SAXException e)
                     {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                    LOG.warn("Exception with XML" ,e );
                     }
                 catch (final XPathExpressionException e)
                     {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    LOG.warn("Exception with XPath" ,e );
+                    }
+                }
+
+            private void appendSpace(final StringBuilder sb, final int extraSpace)
+                {
+                for (int j = 0; j < extraSpace; j++)
+                    {
+                    sb.append(" ");
                     }
                 }
             };
@@ -243,6 +275,83 @@ public class AmazonS3Impl implements AmazonS3
     public void delete(final String bucketName, final String fileName) throws IOException
         {
         delete(bucketName+"/"+fileName);
+        }
+    
+    public void deleteRegEx(final String bucketName, final String regex) 
+        throws IOException
+        {
+        final String fullPath = bucketName;
+        final String url = "https://s3.amazonaws.com:443/" + fullPath;
+        LOG.debug("Sending to URL: "+url);
+        
+        final Collection<String> filesToDelete = new LinkedList<String> ();
+        final GetMethod method = new GetMethod(url);
+        boolean matchStartTemp = false;
+        String toMatchTemp = regex;
+        boolean matchEndTemp = false;
+        
+        if (!regex.endsWith("*") && !regex.startsWith("*"))
+            {
+            delete(bucketName, regex);
+            return;
+            }
+        if (regex.endsWith("*"))
+            {
+            matchStartTemp = true;
+            toMatchTemp = toMatchTemp.substring(0, regex.length()-1);
+            }
+        if (regex.startsWith("*"))
+            {
+            matchEndTemp = true;
+            toMatchTemp = toMatchTemp.substring(1);
+            }
+        
+        final boolean matchStart = matchStartTemp;
+        final boolean matchEnd = matchEndTemp;
+        final String toMatch = toMatchTemp;
+        final InputStreamHandler handler = new InputStreamHandler()
+            {
+            public void handleInputStream(final InputStream is) throws IOException
+                {
+                // Just convert it to a string for easier debugging.
+                final String xmlBody = IOUtils.toString(is);
+                try
+                    {
+                    final XPathUtils xPath = XPathUtils.newXPath(xmlBody);
+                    final String namePath = "/ListBucketResult/Contents/Key"; 
+                    final NodeList nameNodes = xPath.getNodes(namePath);
+                    
+                    for (int i = 0; i < nameNodes.getLength(); i++)
+                        {
+                        final Node nameNode = nameNodes.item(i);
+                        final String name = nameNode.getTextContent();
+                        if (matchStart && name.startsWith(toMatch))
+                            {
+                            filesToDelete.add(name);
+                            }
+                        else if (matchEnd && name.endsWith(toMatch))
+                            {
+                            filesToDelete.add(name);
+                            }
+                        }
+                    }
+                catch (final SAXException e)
+                    {
+                    LOG.warn("Exception with XML" ,e );
+                    }
+                catch (final XPathExpressionException e)
+                    {
+                    LOG.warn("Exception with XPath" ,e );
+                    }
+                }
+            };
+        normalizeRequest(method, "GET", fullPath, false, true);
+        sendRequest(method, handler);
+        
+        for (final String fileName : filesToDelete)
+            {
+            delete(bucketName, fileName);
+            }
         }
 
     private void delete(final String relativePath) throws IOException

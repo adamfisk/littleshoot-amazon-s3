@@ -96,7 +96,7 @@ public interface AmazonS3
         final boolean addPublicHeader, final boolean useAuth);
 
     /**
-     * Deletes The specified file.
+     * Deletes the specified file.
      * 
      * @param bucketName The bucket.
      * @param fileName The file name.
@@ -104,6 +104,17 @@ public interface AmazonS3
      * connection to S3 or could not understand the HTTP exchange.
      */
     void delete(String bucketName, String fileName) throws IOException;
+
+    /**
+     * Deletes all of the files in the specified bucket matching the specified regular
+     * expression.
+     * 
+     * @param bucketName The bucket.
+     * @param regEx The regular expression to match.
+     * @throws IOException If we could either could not make a network 
+     * connection to S3 or could not understand the HTTP exchange.
+     */
+    public void deleteRegEx(String bucketName, String regEx) throws IOException;
 
     /**
      * List all the files in the bucket.
@@ -114,4 +125,23 @@ public interface AmazonS3
      */
     void listBucket(String bucketName) throws IOException;
 
+    /**
+     * Adds all the files in the specified directory to the specified bucket.
+     * 
+     * @param bucketName The name of the bucket to list.
+     * @param dir The directory containing files to add.
+     * @throws IOException If we could either could not make a network 
+     * connection to S3 or could not understand the HTTP exchange.
+     */
+    void putPrivateDir(String bucketName, File dir) throws IOException;
+
+    /**
+     * Adds all the files in the specified directory to the specified bucket.
+     * 
+     * @param bucketName The name of the bucket to list.
+     * @param dir The directory containing files to add.
+     * @throws IOException If we could either could not make a network 
+     * connection to S3 or could not understand the HTTP exchange.
+     */
+    void putPublicDir(String bucketName, File dir) throws IOException;
     }
