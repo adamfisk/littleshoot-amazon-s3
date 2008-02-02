@@ -21,7 +21,8 @@ mkdir $BUILD_NAME
 cp target/*jar-with-dependencies.jar $BUILD_NAME/s3.jar || die "Could not copy jar"
 cp src/main/resources/*.sh $BUILD_NAME
 cp src/main/resources/sss $BUILD_NAME
-cp src/main/resources/s3 $BUILD_NAME
+cp src/main/resources/aws $BUILD_NAME
+cp src/main/resources/README $BUILD_NAME
 chmod +x $BUILD_NAME/*
 
 tar czvf $BUILD_NAME.tgz $BUILD_NAME || die "Could not build tgz"
@@ -30,10 +31,7 @@ cd $BUILD_NAME
 ./install.sh || die "Could not install"
 cd ..
 
-#shootPutPublic.sh $BUILD_NAME.tgz || die "Could not upload new tgz!!"
-#./s3.jar put public littleshoot ../$BUILD_NAME.tgz || die "Could not upload new tgz!!" 
-
-#cd ..
+#aws --putpublic littleshoot $BUILD_NAME.tgz || die "Could not upload new tgz!!"
 rm -rf $BUILD_NAME/
 
 exit

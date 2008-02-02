@@ -292,6 +292,7 @@ public class AmazonS3Impl implements AmazonS3
         
         if (!regex.endsWith("*") && !regex.startsWith("*"))
             {
+            System.out.println("Note: Not using * expansion.  Trying to delete: "+regex);
             delete(bucketName, regex);
             return;
             }
@@ -299,13 +300,15 @@ public class AmazonS3Impl implements AmazonS3
             {
             matchStartTemp = true;
             toMatchTemp = toMatchTemp.substring(0, regex.length()-1);
+            LOG.debug("Checking for files that start with: "+toMatchTemp);
             }
         if (regex.startsWith("*"))
             {
             matchEndTemp = true;
             toMatchTemp = toMatchTemp.substring(1);
+            LOG.debug("Checking for files that end with: "+toMatchTemp);
             }
-        
+        LOG.debug("Checking for files matching: "+toMatchTemp);
         final boolean matchStart = matchStartTemp;
         final boolean matchEnd = matchEndTemp;
         final String toMatch = toMatchTemp;
@@ -327,10 +330,12 @@ public class AmazonS3Impl implements AmazonS3
                         final String name = nameNode.getTextContent();
                         if (matchStart && name.startsWith(toMatch))
                             {
+                            LOG.debug("Matched: "+name);
                             filesToDelete.add(name);
                             }
                         else if (matchEnd && name.endsWith(toMatch))
                             {
+                            LOG.debug("Matched: "+name);
                             filesToDelete.add(name);
                             }
                         }
