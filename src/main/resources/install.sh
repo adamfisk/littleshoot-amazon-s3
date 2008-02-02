@@ -21,13 +21,11 @@ function link
 for x
 do 
     cd /usr/local/bin
-    #link=/usr/local/bin/$x
     echo "Creating link: $x"
     if [ -L $x ]; then
         echo "Link exists.  Overwriting."
         sudo rm $x
     fi
-    echo "Running ln -s $x $link"
     
     sudo ln -s $installDir/$x $x || die "Could not link file $x."
     newOwner=$USER
@@ -37,12 +35,10 @@ done
 }
 
 pushd $installDir
-#pushd /usr/local/bin
 
 echo "Linking files in /usr/local/bin"
-link shoot*
 link sss
-link s3
-#link *.jar
+link aws
+
 popd
 
