@@ -45,7 +45,11 @@ public class Launcher
             final String bucketDir = "bucket, dir";
             final String bucket = "bucket";
             m_options.addOption("h", "help", false, "Print this message.");
-            
+
+            final Option get = new Option("get", "getfile", true, 
+                "Gets the specified file.");
+            add(get, bucketFile, 2, new Get());
+        
             final Option putPrivate = new Option("put", "putprivate", true, 
                 "Adds the specified file to S3 as a private file.");
             add(putPrivate, bucketFile, 2, new PutPrivate());
