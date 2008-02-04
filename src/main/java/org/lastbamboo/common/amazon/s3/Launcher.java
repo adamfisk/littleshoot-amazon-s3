@@ -12,6 +12,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.lastbamboo.common.util.Pair;
 import org.lastbamboo.common.util.PairImpl;
 
@@ -87,12 +90,20 @@ public class Launcher
                 "Lists all the files in the specified bucket.");
             add(listBucket, bucket, 1, new ListBucket());
             
+            final Option verbose = new Option("v", "verbose", false, 
+                "Provide verbose output.");
+            m_options.addOption(verbose);
             final CommandLineParser parser = new GnuParser();
             
             try
                 {
                 final CommandLine cmd = parser.parse(m_options, args);
 
+                if (cmd.hasOption(verbose.getOpt()))
+                    {
+                    Logger.getRootLogger().setLevel(Level.ALL);
+                    }
+                
                 for (final Pair<Option, ArgsProcessor> optionPair : m_optionsPairs)
                     {
                     final Option opt = optionPair.getFirst();
