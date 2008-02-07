@@ -33,7 +33,7 @@ cd $BUILD_NAME
 ./install.sh || die "Could not install"
 cd ..
 
-aws --putpublic littleshoot $BUILD_NAME.tgz || die "Could not upload new tgz!!"
+aws -v --putpublic littleshoot $BUILD_NAME.tgz || die "Could not upload new tgz!!"
 rm -rf $BUILD_NAME/
 
 exit

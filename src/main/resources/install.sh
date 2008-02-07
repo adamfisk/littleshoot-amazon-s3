@@ -34,10 +34,11 @@ installDir=/usr/local/littleshoot
 if [ -d $installDir ]; then
     echo "Install dir exists.  Overwriting files."
 else
+    echo "Making install dir.  You may be prompted for your root password for sudo."
     sudo mkdir $installDir || die "Could not make install dir"
 fi
 
-echo "Copying files to $installDir."
+echo "Copying files to $installDir.  You may be prompted for your root password for sudo."
 sudo cp * $installDir/
 
 function link
