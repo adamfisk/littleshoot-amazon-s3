@@ -118,6 +118,16 @@ public class Launcher
                     {
                     printHelp();
                     }
+                else if (cmd.getOptions().length == 0)
+                    {
+                    System.err.println("Could not understand the options you specified.  " +
+                    	"Printing help.");
+                    printHelp();
+                    
+                    System.out.println();
+                    System.err.println("Could not understand the options you specified.  " +
+                    	"See above help.");
+                    }
                 }
             catch (final ParseException e)
                 {
@@ -128,8 +138,8 @@ public class Launcher
         private void printHelp()
             {
             final HelpFormatter formatter = new HelpFormatter();
-            formatter.setLeftPadding(2);
-            formatter.setDescPadding(2);
+            //formatter.setLeftPadding(2);
+            //formatter.setDescPadding(2);
             //formatter.setWidth(80);
             formatter.printHelp("aws", m_options);
             }
