@@ -44,6 +44,7 @@ public class Launcher
             opt.setValueSeparator(' ');
             opt.setArgName(desc);
             opt.setOptionalArg(optional);
+            
             m_options.addOption(opt);
             m_optionsPairs.add(new PairImpl<Option, ArgsProcessor>(opt, processor));
             }

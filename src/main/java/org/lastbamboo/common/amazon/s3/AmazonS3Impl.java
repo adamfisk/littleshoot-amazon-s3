@@ -213,12 +213,14 @@ public class AmazonS3Impl implements AmazonS3
                     final NodeList nameNodes = xPath.getNodes(namePath);
                     final NodeList lmNodes = xPath.getNodes(creationDatePath);
                     final int charsSep = 46;
-                    System.out.println("----------------------------------------------------------");
+                    System.out.println("------------------------------------------------------------------------------");
                     final StringBuilder desc = new StringBuilder();
                     desc.append("Name");
                     appendSpace(desc, charsSep-4);
                     desc.append("Creation Date");
                     System.out.println(desc.toString());
+                    System.out.println("------------------------------------------------------------------------------");
+                    System.out.println();
                     for (int i = 0; i < nameNodes.getLength(); i++)
                         {
                         final Node nameNode = nameNodes.item(i);
@@ -280,7 +282,21 @@ public class AmazonS3Impl implements AmazonS3
                     final NodeList lmNodes = xPath.getNodes(lastModifiedPath);
                     final NodeList sizeNodes = xPath.getNodes(sizePath);
                     
-                    System.out.println("----------------------------------------------------------");
+                    System.out.println("------------------------------------------------------------------------------");
+                    final int sep1 = 30;
+                    final int sep2 = 26;
+                    final StringBuilder desc = new StringBuilder();
+                    final String desc1 = "Name";
+                    final String desc2 = "Last Modified";
+                    final String desc3 = "Size";
+                    desc.append(desc1);
+                    appendSpace(desc, sep1-desc1.length());
+                    desc.append(desc2);
+                    appendSpace(desc, sep2-desc2.length());
+                    desc.append(desc3);
+                    System.out.println(desc.toString());
+                    System.out.println("------------------------------------------------------------------------------");
+                    System.out.println();
                     for (int i = 0; i < nameNodes.getLength(); i++)
                         {
                         final Node nameNode = nameNodes.item(i);
@@ -294,17 +310,17 @@ public class AmazonS3Impl implements AmazonS3
                         final double sizeK = sizeInt/1024;
                         final double sizeMb = sizeK/1024;
                         
-                        final DecimalFormat df = new DecimalFormat("###0.##");
+                        
                         final String dateString = DateUtils.prettyS3Date(lm);
                         final StringBuilder sb = new StringBuilder();
                         sb.append(name);
                         
-                        appendSpace (sb, 30 - name.length());
+                        appendSpace (sb, sep1 - name.length());
                         sb.append(dateString);
-                        appendSpace (sb, 12 - dateString.length());
                         
+                        final DecimalFormat df = new DecimalFormat("###0.##");
                         final String formattedSize = df.format(sizeMb);
-                        appendSpace (sb, 10 - formattedSize.length());
+                        appendSpace (sb, sep2 - dateString.length());
 
                         sb.append(formattedSize);
                         sb.append(" MB");
