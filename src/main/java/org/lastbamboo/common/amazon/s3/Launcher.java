@@ -85,7 +85,7 @@ public class Launcher
                 " at the beginning or end of the file name.");
             add(delete, bucketFile, 2, new Delete());
             
-            final Option deleteBucket = new Option("rmb", "deletebucket", true, 
+            final Option deleteBucket = new Option("rmdir", "deletebucket", true, 
                 "Removes the specified bucket if it's empty.");
             add(deleteBucket, bucket, 1, new DeleteBucket());
 
