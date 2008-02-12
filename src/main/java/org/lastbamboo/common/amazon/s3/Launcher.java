@@ -100,7 +100,7 @@ public class Launcher
             add(listBucket, bucket, 1, new ListBucket(), true);
             
             final Option verbose = new Option("v", "verbose", false, 
-                "Provide verbose output.");
+                "Provides verbose output.");
             m_options.addOption(verbose);
             final CommandLineParser parser = new GnuParser();
             
