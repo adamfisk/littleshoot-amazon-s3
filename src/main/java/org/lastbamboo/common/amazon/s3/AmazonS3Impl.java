@@ -192,7 +192,71 @@ public class AmazonS3Impl implements AmazonS3
         {
         put(bucketName, null, false);
         }
-        
+   
+    public void listBuckets() throws IOException
+        {
+        final String url = "https://s3.amazonaws.com:443";
+        LOG.debug("Sending to URL: "+url);
+        final GetMethod method = new GetMethod(url);
+        final InputStreamHandler handler = new InputStreamHandler()
+            {
+            public void handleInputStream(final InputStream is) throws IOException
+                {
+                // Just convert it to a string for easier debugging.
+                final String xmlBody = IOUtils.toString(is);
+                try
+                    {
+                    final XPathUtils xPath = XPathUtils.newXPath(xmlBody);
+                    final String namePath = "/ListAllMyBucketsResult/Buckets/Bucket/Name"; 
+                    final String creationDatePath = 
+                        "/ListAllMyBucketsResult/Buckets/Bucket/CreationDate"; 
+                    final NodeList nameNodes = xPath.getNodes(namePath);
+                    final NodeList lmNodes = xPath.getNodes(creationDatePath);
+                    final int charsSep = 46;
+                    System.out.println("----------------------------------------------------------");
+                    final StringBuilder desc = new StringBuilder();
+                    desc.append("Name");
+                    appendSpace(desc, charsSep-4);
+                    desc.append("Creation Date");
+                    System.out.println(desc.toString());
+                    for (int i = 0; i < nameNodes.getLength(); i++)
+                        {
+                        final Node nameNode = nameNodes.item(i);
+                        final String name = nameNode.getTextContent();
+                        final Node lmNode = lmNodes.item(i);
+                        final String lm = lmNode.getTextContent();
+                        
+                        final String dateString = DateUtils.prettyS3Date(lm);
+                        final StringBuilder sb = new StringBuilder();
+                        sb.append(name);
+                        
+                        appendSpace (sb, charsSep - name.length());
+                        sb.append(dateString);
+                        System.out.println(sb.toString());
+                        }
+                    }
+                catch (final SAXException e)
+                    {
+                    LOG.warn("Exception with XML" ,e );
+                    }
+                catch (final XPathExpressionException e)
+                    {
+                    LOG.warn("Exception with XPath" ,e );
+                    }
+                }
+
+            private void appendSpace(final StringBuilder sb, final int extraSpace)
+                {
+                for (int j = 0; j < extraSpace; j++)
+                    {
+                    sb.append(" ");
+                    }
+                }
+            };
+        normalizeRequest(method, "GET", "", false, true);
+        sendRequest(method, handler);
+        }
+    
     public void listBucket(final String bucketName) throws IOException
         {
         final String fullPath = bucketName;
@@ -216,6 +280,7 @@ public class AmazonS3Impl implements AmazonS3
                     final NodeList lmNodes = xPath.getNodes(lastModifiedPath);
                     final NodeList sizeNodes = xPath.getNodes(sizePath);
                     
+                    System.out.println("----------------------------------------------------------");
                     for (int i = 0; i < nameNodes.getLength(); i++)
                         {
                         final Node nameNode = nameNodes.item(i);

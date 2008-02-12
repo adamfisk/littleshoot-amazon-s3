@@ -12,7 +12,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.lastbamboo.common.util.Pair;
@@ -35,9 +34,16 @@ public class Launcher
         private void add(final Option opt, final String desc, final int numArgs, 
             final ArgsProcessor processor)
             {
+            add(opt, desc, numArgs, processor, false);
+            }
+        
+        private void add(final Option opt, final String desc, final int numArgs, 
+            final ArgsProcessor processor, final boolean optional)
+            {
             opt.setArgs(numArgs);
             opt.setValueSeparator(' ');
             opt.setArgName(desc);
+            opt.setOptionalArg(optional);
             m_options.addOption(opt);
             m_optionsPairs.add(new PairImpl<Option, ArgsProcessor>(opt, processor));
             }
@@ -87,8 +93,10 @@ public class Launcher
             add(newBucket, bucket, 1, new CreateBucket());
             
             final Option listBucket = new Option("ls", "listbucket", true, 
-                "Lists all the files in the specified bucket.");
-            add(listBucket, bucket, 1, new ListBucket());
+                "Lists all the files in the specified bucket.  Lists all buckets if no bucket name " +
+                "is given.");
+            // This makes the bucket name optional.
+            add(listBucket, bucket, 1, new ListBucket(), true);
             
             final Option verbose = new Option("v", "verbose", false, 
                 "Provide verbose output.");
@@ -110,7 +118,11 @@ public class Launcher
                     if (cmd.hasOption(opt.getOpt()))
                         {
                         final ArgsProcessor processor = optionPair.getSecond();
-                        final String[] values = cmd.getOptionValues(opt.getOpt());
+                        String[] values = cmd.getOptionValues(opt.getOpt());
+                        if (values == null)
+                            {
+                            values = new String[0];
+                            }
                         processor.processArgs(values);
                         }
                     }
@@ -328,16 +340,31 @@ public class Launcher
         {
         public void processArgs(final String[] args)
             {
-            final AmazonS3 s3 = setup(args, 1, "bucketName");
-            final String bucketName = args[0];
-            try
+            final AmazonS3 s3 = setup(args, 0, "bucketName");
+            if (args.length == 0)
                 {
-                s3.listBucket(bucketName);
+                try
+                    {
+                    s3.listBuckets();
+                    }
+                catch (final IOException e)
+                    {
+                    System.out.println("There was an error listing the bucket.");
+                    e.printStackTrace();
+                    }
                 }
-            catch (final IOException e)
+            else
                 {
-                System.out.println("There was an error listing the bucket.");
-                e.printStackTrace();
+                final String bucketName = args[0];
+                try
+                    {
+                    s3.listBucket(bucketName);
+                    }
+                catch (final IOException e)
+                    {
+                    System.out.println("There was an error listing the bucket.");
+                    e.printStackTrace();
+                    }
                 }
             }
         }

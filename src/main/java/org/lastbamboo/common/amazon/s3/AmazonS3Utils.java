@@ -9,21 +9,13 @@
 
 package org.lastbamboo.common.amazon.s3;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.lastbamboo.common.amazon.stack.Base64;
 
 /**
  * Utility methods for using Amazon S3.  This is a modified version of the

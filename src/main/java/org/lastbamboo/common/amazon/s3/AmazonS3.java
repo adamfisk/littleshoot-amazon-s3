@@ -146,4 +146,11 @@ public interface AmazonS3
      * connection to S3 or could not understand the HTTP exchange.
      */
     void putPublicDir(String bucketName, File dir) throws IOException;
+
+    /**
+     * Lists all the user's buckets.
+     * @throws IOException If we could either could not make a network 
+     * connection to S3 or could not understand the HTTP exchange.
+     */
+    void listBuckets() throws IOException;
     }
