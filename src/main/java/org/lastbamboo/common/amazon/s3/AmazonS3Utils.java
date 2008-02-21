@@ -39,7 +39,8 @@ public class AmazonS3Utils
         final String resource, final Header[] headers, final String expires)
         {
         final StringBuilder buf = new StringBuilder();
-        buf.append(method + "\n");
+        buf.append(method);
+        buf.append("\n");
 
         // Add all interesting headers to a list, then sort them.  "Interesting"
         // is defined as Content-MD5, Content-Type, Date, and x-amz-
@@ -47,9 +48,8 @@ public class AmazonS3Utils
             new TreeMap<String, String>();
         if (headers != null) 
             {
-            for (int i = 0; i < headers.length; i++)
+            for (final Header curHeader : headers)
                 {
-                final Header curHeader = headers[i];
                 final String lk = curHeader.getName().toLowerCase();
                 // Ignore any headers that are not particularly interesting.
                 if (lk.equals("content-type") || lk.equals("content-md5") || 
@@ -86,11 +86,10 @@ public class AmazonS3Utils
             interestingHeaders.put("content-md5", "");
             }
 
-        // Finally, add all the interesting headers (i.e.: all that startwith x-amz- ;-))
-        for (Iterator<String> i = interestingHeaders.keySet().iterator(); 
-            i.hasNext();) 
+        // Finally, add all the interesting headers 
+        // (i.e.: all that start with x-amz- ;-))
+        for (final String key : interestingHeaders.keySet()) 
             {
-            final String key = i.next();
             if (key.startsWith(AMAZON_HEADER_PREFIX)) 
                 {
                 buf.append(key).append(':').append(interestingHeaders.get(key));

@@ -27,7 +27,8 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.lastbamboo.common.amazon.stack.AmazonWsUtils;
+import org.lastbamboo.common.amazon.stack.AwsUtils;
+import org.lastbamboo.common.util.SecurityUtils;
 import org.lastbamboo.common.util.DateUtils;
 import org.lastbamboo.common.util.FileInputStreamHandler;
 import org.lastbamboo.common.util.InputStreamHandler;
@@ -56,14 +57,14 @@ public class AmazonS3Impl implements AmazonS3
      */
     public AmazonS3Impl() throws IOException
         {
-        if (!AmazonWsUtils.hasPropsFile())
+        if (!AwsUtils.hasPropsFile())
             {
             System.out.println("No properties file found");
             throw new IOException("No props file");
             }
         try
             {
-            this.m_accessKeyId = AmazonWsUtils.getAccessKeyId();
+            this.m_accessKeyId = AwsUtils.getAccessKeyId();
             }
         catch (final IOException e)
             {
@@ -73,7 +74,7 @@ public class AmazonS3Impl implements AmazonS3
             }
         try
             {
-            this.m_secretAccessKey = AmazonWsUtils.getAccessKey();
+            this.m_secretAccessKey = AwsUtils.getAccessKey();
             }
         catch (final IOException e)
             {
@@ -589,7 +590,7 @@ public class AmazonS3Impl implements AmazonS3
             AmazonS3Utils.makeCanonicalString(methodString, fullPath, 
                 method.getRequestHeaders());
         final String encodedCanonical = 
-            AmazonWsUtils.encode(this.m_secretAccessKey, canonicalString, false);
+            SecurityUtils.encode(this.m_secretAccessKey, canonicalString, false);
         
         final String authValue = 
             "AWS " + this.m_accessKeyId + ":" + encodedCanonical;
