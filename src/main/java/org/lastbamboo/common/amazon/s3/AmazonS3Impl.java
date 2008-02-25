@@ -590,7 +590,7 @@ public class AmazonS3Impl implements AmazonS3
             AmazonS3Utils.makeCanonicalString(methodString, fullPath, 
                 method.getRequestHeaders());
         final String encodedCanonical = 
-            SecurityUtils.encode(this.m_secretAccessKey, canonicalString, false);
+            SecurityUtils.encode(this.m_secretAccessKey, canonicalString);
         
         final String authValue = 
             "AWS " + this.m_accessKeyId + ":" + encodedCanonical;
