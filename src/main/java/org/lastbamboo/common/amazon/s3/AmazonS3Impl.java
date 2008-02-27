@@ -68,8 +68,8 @@ public class AmazonS3Impl implements AmazonS3
             }
         catch (final IOException e)
             {
-            System.out.println("Found the properties file, but there's no access key ID in " +
-                    "the form: accessKeyId=");
+            System.out.println("Found the properties file, but there's no " +
+                "access key ID in the form: accessKeyId=");
             throw e;
             }
         try
@@ -78,8 +78,8 @@ public class AmazonS3Impl implements AmazonS3
             }
         catch (final IOException e)
             {
-            System.out.println("Found the properties file, but there's no secret access key " +
-                    "in the form: accessKey=");
+            System.out.println("Found the properties file, but there's no " +
+                "secret access key in the form: accessKey=");
             throw e;
             }
         configureDns();
@@ -590,7 +590,7 @@ public class AmazonS3Impl implements AmazonS3
             AmazonS3Utils.makeCanonicalString(methodString, fullPath, 
                 method.getRequestHeaders());
         final String encodedCanonical = 
-            SecurityUtils.encode(this.m_secretAccessKey, canonicalString);
+            SecurityUtils.signAndEncode(this.m_secretAccessKey, canonicalString);
         
         final String authValue = 
             "AWS " + this.m_accessKeyId + ":" + encodedCanonical;

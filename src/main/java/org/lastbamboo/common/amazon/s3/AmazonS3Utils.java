@@ -9,7 +9,6 @@
 
 package org.lastbamboo.common.amazon.s3;
 
-import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -34,7 +33,7 @@ public class AmazonS3Utils
         {
         return makeCanonicalString(method, resource, headers, null);
         }
-
+    
     private static String makeCanonicalString(final String method, 
         final String resource, final Header[] headers, final String expires)
         {
