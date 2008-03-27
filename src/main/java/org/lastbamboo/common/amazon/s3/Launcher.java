@@ -261,14 +261,13 @@ public class Launcher
             catch (final IOException e)
                 {
                 System.out.println("Could not create bucket.  Already exists?");
-                e.printStackTrace();
                 }
             final String fileString = args[1];
             final File file = new File(fileString);
             if (!file.isFile())
                 {
                 System.out.println("File not found: "+fileString);
-                return;
+                System.exit(1);
                 }
             try
                 {
@@ -278,6 +277,7 @@ public class Launcher
                 {
                 System.out.println("Could not upload file.  Error was: ");
                 e.printStackTrace();
+                System.exit(1);
                 }
             }
         }
@@ -312,6 +312,7 @@ public class Launcher
                 {
                 System.out.println("Could not upload file.  Error was: ");
                 e.printStackTrace();
+                System.exit(1);
                 }
             }
         }
@@ -333,6 +334,7 @@ public class Launcher
                 {
                 System.out.println("There was an error getting the file.");
                 e.printStackTrace();
+                System.exit(1);
                 }
             }
         }
