@@ -553,11 +553,13 @@ public class AmazonS3Impl implements AmazonS3
                 // body, so print it out.
                 final InputStream is = method.getResponseBodyAsStream();
                 final String response = IOUtils.toString(is);
-                IOUtils.closeQuietly(is);
-                LOG.debug("Got response: "+response);
+                final String msg = statusLine + "\nwith body:\n" + response;
                 
+                LOG.debug("Got response: "+msg);
+                
+                IOUtils.closeQuietly(is);
                 // TODO: Send this to the stream handler.
-                throw new IOException("Error accessing S3");
+                throw new IOException("Error accessing S3: "+msg);
                 }
             else
                 {
