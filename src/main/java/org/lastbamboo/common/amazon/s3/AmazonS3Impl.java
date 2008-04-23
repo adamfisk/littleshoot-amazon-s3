@@ -14,7 +14,6 @@ import java.util.LinkedList;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpMethodRetryHandler;
 import org.apache.commons.httpclient.StatusLine;
@@ -28,11 +27,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.lastbamboo.common.amazon.stack.AwsUtils;
-import org.lastbamboo.common.util.SecurityUtils;
+import org.lastbamboo.common.http.client.HttpClientManager;
+import org.lastbamboo.common.http.client.HttpClientManagerImpl;
 import org.lastbamboo.common.util.DateUtils;
 import org.lastbamboo.common.util.FileInputStreamHandler;
 import org.lastbamboo.common.util.InputStreamHandler;
 import org.lastbamboo.common.util.NoOpInputStreamHandler;
+import org.lastbamboo.common.util.SecurityUtils;
 import org.lastbamboo.common.util.xml.XPathUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -499,7 +500,8 @@ public class AmazonS3Impl implements AmazonS3
     private void sendRequest(final HttpMethod method, 
         final InputStreamHandler handler) throws IOException
         {
-        final HttpClient client = new HttpClient();
+        final HttpClientManager client = new HttpClientManagerImpl();
+        
         // We customize the retry handler because AWS apparently disconnects a lot.
         final HttpMethodRetryHandler retryHandler = 
             new HttpMethodRetryHandler()
