@@ -27,9 +27,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.lastbamboo.common.amazon.stack.AwsUtils;
-import org.lastbamboo.common.http.client.HttpClientManager;
-import org.lastbamboo.common.http.client.HttpClientManagerImpl;
 import org.lastbamboo.common.util.DateUtils;
+import org.lastbamboo.common.util.DefaultHttpClient;
+import org.lastbamboo.common.util.DefaultHttpClientImpl;
 import org.lastbamboo.common.util.FileInputStreamHandler;
 import org.lastbamboo.common.util.InputStreamHandler;
 import org.lastbamboo.common.util.NoOpInputStreamHandler;
@@ -500,7 +500,7 @@ public class AmazonS3Impl implements AmazonS3
     private void sendRequest(final HttpMethod method, 
         final InputStreamHandler handler) throws IOException
         {
-        final HttpClientManager client = new HttpClientManagerImpl();
+        final DefaultHttpClient client = new DefaultHttpClientImpl();
         
         // We customize the retry handler because AWS apparently disconnects a lot.
         final HttpMethodRetryHandler retryHandler = 
