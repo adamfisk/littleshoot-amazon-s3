@@ -11,6 +11,7 @@ import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.httpclient.Header;
@@ -181,7 +182,9 @@ public class AmazonS3Impl implements AmazonS3
         {
         try
             {
-            final RequestEntity re = new FileRequestEntity(file, "");
+            final MimetypesFileTypeMap map = new MimetypesFileTypeMap();
+            final String mimeType = map.getContentType(file);
+            final RequestEntity re = new FileRequestEntity(file, mimeType);
             put(bucketName+"/"+file.getName(), re, makePublic);
             }
         catch (final FileNotFoundException e)
