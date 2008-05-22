@@ -52,6 +52,8 @@ public class AmazonS3Impl implements AmazonS3
     private String m_accessKeyId;
     private String m_secretAccessKey;
 
+    private MimetypesFileTypeMap m_mimeMap;
+
     /**
      * Creates a new S3 instance.
      * 
@@ -85,6 +87,9 @@ public class AmazonS3Impl implements AmazonS3
             throw e;
             }
         configureDns();
+        
+        this.m_mimeMap = new MimetypesFileTypeMap();
+        this.m_mimeMap.addMimeTypes("application/x-apple-diskimage dmg\n");
         }
     
     private static void configureDns()
@@ -182,8 +187,7 @@ public class AmazonS3Impl implements AmazonS3
         {
         try
             {
-            final MimetypesFileTypeMap map = new MimetypesFileTypeMap();
-            final String mimeType = map.getContentType(file);
+            final String mimeType = this.m_mimeMap.getContentType(file);
             final RequestEntity re = new FileRequestEntity(file, mimeType);
             put(bucketName+"/"+file.getName(), re, makePublic);
             }
@@ -470,6 +474,7 @@ public class AmazonS3Impl implements AmazonS3
         if (re != null)
             {
             method.setRequestEntity(re);
+            method.setRequestHeader("Content-Type", re.getContentType());
             }
         else
             {
@@ -539,6 +544,7 @@ public class AmazonS3Impl implements AmazonS3
             HttpMethodParams.RETRY_HANDLER, retryHandler);
         if (LOG.isDebugEnabled())
             {
+            LOG.debug("HTTP request headers: ");
             printHeaders(method.getRequestHeaders());
             }
         try
@@ -596,6 +602,7 @@ public class AmazonS3Impl implements AmazonS3
         final String canonicalString =
             AmazonS3Utils.makeCanonicalString(methodString, fullPath, 
                 method.getRequestHeaders());
+        LOG.debug("Using canonical string: "+canonicalString);
         final String encodedCanonical = 
             SecurityUtils.signAndEncode(this.m_secretAccessKey, canonicalString);
         
@@ -610,7 +617,7 @@ public class AmazonS3Impl implements AmazonS3
         for (int i = 0; i < headers.length; i++)
             {
             final Header rh = headers[i];
-            LOG.debug("Using header: "+rh);
+            LOG.debug(rh);
             }
         }
     }

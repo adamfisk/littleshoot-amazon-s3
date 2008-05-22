@@ -7,6 +7,11 @@ import java.io.FileWriter;
 import java.io.Reader;
 import java.io.Writer;
 
+import javax.activation.MimetypesFileTypeMap;
+
+import org.apache.commons.httpclient.methods.FileRequestEntity;
+import org.apache.commons.httpclient.methods.RequestEntity;
+
 import junit.framework.TestCase;
 
 /**
@@ -17,9 +22,17 @@ import junit.framework.TestCase;
 public class AmazonS3Test extends TestCase
     {
 
-    public void testAmazon() throws Exception
+    public void testMimeTypes() throws Exception
         {
-    
+        final MimetypesFileTypeMap map = new MimetypesFileTypeMap();
+        map.addMimeTypes("application/x-apple-diskimage dmg\n");
+        assertEquals("application/x-apple-diskimage", map.getContentType("test.dmg"));
+        //System.out.println(map.getContentType("test.exe"));
+        //System.out.println(map.getContentType("test.xml"));
+        //System.out.println(map.getContentType("test.txt"));
+        //System.out.println(map.getContentType("test.html"));
+        //final RequestEntity re = new FileRequestEntity(file, mimeType);
+        
         }
     
     public static void main(final String[] args) throws Exception
