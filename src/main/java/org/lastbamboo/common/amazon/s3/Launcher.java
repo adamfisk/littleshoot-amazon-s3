@@ -408,7 +408,8 @@ public class Launcher
             }
         }
     
-    private static AmazonS3 setup(final String[] args, final int length, final String message)
+    private static AmazonS3 setup(final String[] args, final int length, 
+        final String message)
         {
         checkArgs(args, length, message);
         try
@@ -418,11 +419,12 @@ public class Launcher
         catch (final IOException e)
             {
             System.out.println("Error loading props files...");
-            throw new IllegalArgumentException("Error loading props files");
+            throw new IllegalArgumentException("Error loading props files", e);
             }
         }
     
-    private static void checkArgs(final String[] args, final int length, final String message)
+    private static void checkArgs(final String[] args, final int length, 
+        final String message)
         {
         if (args.length < length)
             {
