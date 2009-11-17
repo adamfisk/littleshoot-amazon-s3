@@ -18,6 +18,7 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpMethodRetryHandler;
 import org.apache.commons.httpclient.StatusLine;
+import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.FileRequestEntity;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -49,9 +50,11 @@ public class AmazonS3Impl implements AmazonS3
 
     private static final Log LOG = LogFactory.getLog(AmazonS3Impl.class);
     
-    private String m_accessKeyId;
-    private String m_secretAccessKey;
-
+    private final String m_accessKeyId;
+    private final String m_secretAccessKey;
+    private String m_secureUrlBase;
+    private String m_urlBase;
+    
     private MimetypesFileTypeMap m_mimeMap;
 
     /**
@@ -59,7 +62,7 @@ public class AmazonS3Impl implements AmazonS3
      * 
      * @throws IOException If the props file can't be found or keys can't be read. 
      */
-    public AmazonS3Impl() throws IOException
+    public AmazonS3Impl() throws IOException 
         {
         if (!AwsUtils.hasPropsFile())
             {
@@ -86,6 +89,26 @@ public class AmazonS3Impl implements AmazonS3
                 "secret access key in the form: accessKey=");
             throw e;
             }
+        
+        try 
+            {
+            this.m_urlBase = AwsUtils.getUrlBase();
+            } 
+        catch (final IOException e) 
+            {
+            System.out.println("No urlBase in properties file.");
+            this.m_urlBase = "http://s3.amazonaws.com";
+            throw e;
+            }
+        try 
+            {
+            this.m_secureUrlBase = AwsUtils.getSecureUrlBase();
+            } 
+        catch (final IOException e) 
+            {
+            System.out.println("No urlBase in properties file.");
+            this.m_secureUrlBase = "https://s3.amazonaws.com:443";
+            }
         configureDns();
         
         this.m_mimeMap = new MimetypesFileTypeMap();
@@ -110,7 +133,7 @@ public class AmazonS3Impl implements AmazonS3
         //final String fullPath = 
             //this.m_accessKeyId + "-" + bucketName + "/" + fileName;
         final String fullPath = bucketName + "/" + fileName;
-        final String url = "https://s3.amazonaws.com:443/" + fullPath;
+        final String url = this.m_secureUrlBase + "/" + fullPath;
         LOG.debug("Getting file from URL: "+url);
         final GetMethod method = new GetMethod(url);
         normalizeRequest(method, "GET", fullPath, false, true);
@@ -126,7 +149,7 @@ public class AmazonS3Impl implements AmazonS3
         //final String fullPath = 
             //this.m_accessKeyId + "-" + bucketName + "/" + fileName;
         final String fullPath = bucketName + "/" + fileName;
-        final String url = "http://s3.amazonaws.com/" + fullPath;
+        final String url = this.m_urlBase + "/" +fullPath;
         LOG.debug("Getting file from URL: "+url);
         final GetMethod method = new GetMethod(url);
         
@@ -271,7 +294,7 @@ public class AmazonS3Impl implements AmazonS3
     public void listBucket(final String bucketName) throws IOException
         {
         final String fullPath = bucketName;
-        final String url = "https://s3.amazonaws.com:443/" + fullPath;
+        final String url = this.m_secureUrlBase + "/" +fullPath;
         LOG.debug("Sending to URL: "+url);
         final GetMethod method = new GetMethod(url);
         final InputStreamHandler handler = new InputStreamHandler()
@@ -373,7 +396,7 @@ public class AmazonS3Impl implements AmazonS3
         throws IOException
         {
         final String fullPath = bucketName;
-        final String url = "https://s3.amazonaws.com:443/" + fullPath;
+        final String url = this.m_secureUrlBase + "/" +fullPath;
         LOG.debug("Sending to URL: "+url);
         
         final Collection<String> filesToDelete = new LinkedList<String> ();
@@ -453,7 +476,7 @@ public class AmazonS3Impl implements AmazonS3
     private void delete(final String relativePath) throws IOException
         {
         final String fullPath = relativePath;
-        final String url = "https://s3.amazonaws.com:443/" + fullPath;
+        final String url = this.m_secureUrlBase + "/" +fullPath;
         LOG.debug("Sending to URL: "+url);
         final DeleteMethod method = new DeleteMethod(url);
         
@@ -467,7 +490,7 @@ public class AmazonS3Impl implements AmazonS3
         {
         //final String fullPath = this.m_accessKeyId + "-"+relativePath;
         final String fullPath = relativePath;
-        final String url = "https://s3.amazonaws.com:443/" + fullPath;
+        final String url = this.m_secureUrlBase + "/" +fullPath;
         LOG.debug("Sending to URL: "+url);
         final PutMethod method = new PutMethod(url);
 
@@ -496,6 +519,19 @@ public class AmazonS3Impl implements AmazonS3
             {
             final Header publicHeader = new Header("x-amz-acl", "public-read");
             method.setRequestHeader(publicHeader);
+            }
+        
+        try 
+            {
+            if (method.getURI().getHost().contains("archive.org")) 
+                {
+                method.addRequestHeader("x-amz-auto-make-bucket", "1");
+                }
+            } 
+        catch (URIException e) 
+            {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
             }
         
         if (useAuth)
@@ -542,6 +578,7 @@ public class AmazonS3Impl implements AmazonS3
             
         method.getParams().setParameter(
             HttpMethodParams.RETRY_HANDLER, retryHandler);
+
         if (LOG.isDebugEnabled())
             {
             LOG.debug("HTTP request headers: ");

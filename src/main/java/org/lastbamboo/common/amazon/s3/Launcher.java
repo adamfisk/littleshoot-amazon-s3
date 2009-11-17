@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.prefs.Preferences;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -12,8 +13,10 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.lastbamboo.common.amazon.stack.AwsUtils;
 import org.lastbamboo.common.util.Pair;
 import org.lastbamboo.common.util.PairImpl;
 
@@ -22,6 +25,9 @@ import org.lastbamboo.common.util.PairImpl;
  */
 public class Launcher
     {
+    
+    private static final String BUCKETS_KEY = "littleShootS3Buckets";
+    
     private static final class Command
         {
         private final Collection<Pair<Option, ArgsProcessor>> m_optionsPairs =
@@ -254,14 +260,7 @@ public class Launcher
             {
             final AmazonS3 s3 = setup(args, 2, "bucketName fileName");
             final String bucketName = args[0];
-            try
-                {
-                s3.createBucket(bucketName);
-                }
-            catch (final IOException e)
-                {
-                System.out.println("Could not create bucket.  Already exists?");
-                }
+            createBucket(bucketName, s3);
             final String fileString = args[1];
             final File file = new File(fileString);
             if (!file.isFile())
@@ -284,19 +283,12 @@ public class Launcher
     
     private static class PutPublic implements ArgsProcessor
         {
+
         public void processArgs(final String[] args)
             {
             final AmazonS3 s3 = setup(args, 2, "bucketName fileName");
             final String bucketName = args[0];
-            try
-                {
-                s3.createBucket(bucketName);
-                }
-            catch (final IOException e)
-                {
-                System.out.println("Could not create bucket.  Already exists?");
-                e.printStackTrace();
-                }
+            createBucket(bucketName, s3);
             final String fileString = args[1];
             final File file = new File(fileString);
             if (!file.isFile())
@@ -317,6 +309,66 @@ public class Launcher
             }
         }
 
+    private static void createBucket(final String bucketName, final AmazonS3 s3) 
+        {
+        try 
+            {
+            if (AwsUtils.getUrlBase().contains("archive.org"))
+                {
+                System.out.println("Not creating bucket for URL base: "+
+                    AwsUtils.getUrlBase());
+                return;
+                }
+            } 
+        catch (final IOException e1) 
+            {
+            e1.printStackTrace();
+            }
+        final Preferences prefs = Preferences.userRoot();
+        final String createdBuckets = prefs.get(BUCKETS_KEY, "");
+        if (!createdBuckets.contains(","+bucketName+",") &&
+            !createdBuckets.endsWith(","+bucketName))
+            {
+            try
+                {
+                s3.createBucket(bucketName);
+                prefs.put(BUCKETS_KEY, createdBuckets+","+bucketName);
+                }
+            catch (final IOException e)
+                {
+                System.out.println("Could not create bucket. Already exists?");
+                e.printStackTrace();
+                }
+            }
+        }
+    
+
+    private static void deleteBucket(final String bucketName, final AmazonS3 s3) 
+        {
+        final Preferences prefs = Preferences.userRoot();
+        final String createdBuckets = prefs.get(BUCKETS_KEY, "");
+
+        try
+            {
+            s3.deleteBucket(bucketName);
+            if (createdBuckets.contains(","+bucketName +","))
+                {
+                prefs.put(BUCKETS_KEY, createdBuckets.replace(","+bucketName +",", ","));
+                }
+            else if (createdBuckets.endsWith(","+bucketName)) 
+                {
+                final String strippedBuckets = 
+                    StringUtils.substringBeforeLast(createdBuckets, ","+bucketName);
+                prefs.put(BUCKETS_KEY, strippedBuckets);
+                }
+            }
+        catch (final IOException e)
+            {
+            System.out.println("Could not delete bucket.");
+            e.printStackTrace();
+            }
+        }
+    
     private static class Get implements ArgsProcessor
         {
         public void processArgs(final String[] args)
@@ -396,15 +448,7 @@ public class Launcher
             {
             final AmazonS3 s3 = setup(args, 1, "bucketName");
             final String bucketName = args[0];
-            try
-                {
-                s3.deleteBucket(bucketName);
-                }
-            catch (final IOException e)
-                {
-                System.out.println("There was an error creating the bucket.");
-                e.printStackTrace();
-                }
+            deleteBucket(bucketName, s3);
             }
         }
     
