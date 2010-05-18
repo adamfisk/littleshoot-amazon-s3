@@ -13,8 +13,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.commons.httpclient.Header;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods for using Amazon S3.  This is a modified version of the
@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 public class AmazonS3Utils 
     {
     
-    private static final Log LOG = LogFactory.getLog(AmazonS3Utils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AmazonS3Utils.class);
     
     private static final String AMAZON_HEADER_PREFIX = "x-amz-";
     private static final String ALTERNATIVE_DATE_HEADER = "x-amz-date";

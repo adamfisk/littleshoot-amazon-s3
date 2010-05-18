@@ -26,8 +26,8 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.lastbamboo.common.amazon.stack.AwsUtils;
 import org.lastbamboo.common.util.DateUtils;
 import org.lastbamboo.common.util.DefaultHttpClient;
@@ -48,7 +48,7 @@ import org.xml.sax.SAXException;
 public class AmazonS3Impl implements AmazonS3
     {
 
-    private static final Log LOG = LogFactory.getLog(AmazonS3Impl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AmazonS3Impl.class);
     
     private final String m_accessKeyId;
     private final String m_secretAccessKey;
@@ -654,7 +654,7 @@ public class AmazonS3Impl implements AmazonS3
         for (int i = 0; i < headers.length; i++)
             {
             final Header rh = headers[i];
-            LOG.debug(rh);
+            LOG.debug(rh.toString());
             }
         }
     }
