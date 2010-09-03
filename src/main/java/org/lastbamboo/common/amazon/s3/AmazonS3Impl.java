@@ -18,6 +18,7 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpMethodRetryHandler;
 import org.apache.commons.httpclient.StatusLine;
+import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.FileRequestEntity;
@@ -48,7 +49,7 @@ import org.xml.sax.SAXException;
 public class AmazonS3Impl implements AmazonS3
     {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AmazonS3Impl.class);
+    private final Logger m_log = LoggerFactory.getLogger(AmazonS3Impl.class);
     
     private final String m_accessKeyId;
     private final String m_secretAccessKey;
@@ -134,7 +135,7 @@ public class AmazonS3Impl implements AmazonS3
             //this.m_accessKeyId + "-" + bucketName + "/" + fileName;
         final String fullPath = bucketName + "/" + fileName;
         final String url = this.m_secureUrlBase + "/" + fullPath;
-        LOG.debug("Getting file from URL: "+url);
+        m_log.debug("Getting file from URL: "+url);
         final GetMethod method = new GetMethod(url);
         normalizeRequest(method, "GET", fullPath, false, true);
         
@@ -150,7 +151,7 @@ public class AmazonS3Impl implements AmazonS3
             //this.m_accessKeyId + "-" + bucketName + "/" + fileName;
         final String fullPath = bucketName + "/" + fileName;
         final String url = this.m_urlBase + "/" +fullPath;
-        LOG.debug("Getting file from URL: "+url);
+        m_log.debug("Getting file from URL: "+url);
         final GetMethod method = new GetMethod(url);
         
         // This is a public file, so we don't send the authentication token.
@@ -216,7 +217,7 @@ public class AmazonS3Impl implements AmazonS3
             }
         catch (final FileNotFoundException e)
             {
-            LOG.error("File Not Found: "+file, e);
+            m_log.error("File Not Found: "+file, e);
             }
         }
         
@@ -228,7 +229,7 @@ public class AmazonS3Impl implements AmazonS3
     public void listBuckets() throws IOException
         {
         final String url = "https://s3.amazonaws.com:443";
-        LOG.debug("Sending to URL: "+url);
+        m_log.debug("Sending to URL: "+url);
         final GetMethod method = new GetMethod(url);
         final InputStreamHandler handler = new InputStreamHandler()
             {
@@ -271,11 +272,11 @@ public class AmazonS3Impl implements AmazonS3
                     }
                 catch (final SAXException e)
                     {
-                    LOG.warn("Exception with XML" ,e );
+                    m_log.warn("Exception with XML" ,e );
                     }
                 catch (final XPathExpressionException e)
                     {
-                    LOG.warn("Exception with XPath" ,e );
+                    m_log.warn("Exception with XPath" ,e );
                     }
                 }
 
@@ -295,7 +296,7 @@ public class AmazonS3Impl implements AmazonS3
         {
         final String fullPath = bucketName;
         final String url = this.m_secureUrlBase + "/" +fullPath;
-        LOG.debug("Sending to URL: "+url);
+        m_log.debug("Sending to URL: "+url);
         final GetMethod method = new GetMethod(url);
         final InputStreamHandler handler = new InputStreamHandler()
             {
@@ -361,11 +362,11 @@ public class AmazonS3Impl implements AmazonS3
                     }
                 catch (final SAXException e)
                     {
-                    LOG.warn("Exception with XML" ,e );
+                    m_log.warn("Exception with XML" ,e );
                     }
                 catch (final XPathExpressionException e)
                     {
-                    LOG.warn("Exception with XPath" ,e );
+                    m_log.warn("Exception with XPath" ,e );
                     }
                 }
 
@@ -397,7 +398,7 @@ public class AmazonS3Impl implements AmazonS3
         {
         final String fullPath = bucketName;
         final String url = this.m_secureUrlBase + "/" +fullPath;
-        LOG.debug("Sending to URL: "+url);
+        m_log.debug("Sending to URL: "+url);
         
         final Collection<String> filesToDelete = new LinkedList<String> ();
         final GetMethod method = new GetMethod(url);
@@ -414,15 +415,15 @@ public class AmazonS3Impl implements AmazonS3
             {
             matchStartTemp = true;
             toMatchTemp = toMatchTemp.substring(0, fileName.length()-1);
-            LOG.debug("Checking for files that start with: "+toMatchTemp);
+            m_log.debug("Checking for files that start with: "+toMatchTemp);
             }
         if (fileName.startsWith("*"))
             {
             matchEndTemp = true;
             toMatchTemp = toMatchTemp.substring(1);
-            LOG.debug("Checking for files that end with: "+toMatchTemp);
+            m_log.debug("Checking for files that end with: "+toMatchTemp);
             }
-        LOG.debug("Checking for files matching: "+toMatchTemp);
+        m_log.debug("Checking for files matching: "+toMatchTemp);
         final boolean matchStart = matchStartTemp;
         final boolean matchEnd = matchEndTemp;
         final String toMatch = toMatchTemp;
@@ -444,23 +445,23 @@ public class AmazonS3Impl implements AmazonS3
                         final String name = nameNode.getTextContent();
                         if (matchStart && name.startsWith(toMatch))
                             {
-                            LOG.debug("Matched: "+name);
+                            m_log.debug("Matched: "+name);
                             filesToDelete.add(name);
                             }
                         else if (matchEnd && name.endsWith(toMatch))
                             {
-                            LOG.debug("Matched: "+name);
+                            m_log.debug("Matched: "+name);
                             filesToDelete.add(name);
                             }
                         }
                     }
                 catch (final SAXException e)
                     {
-                    LOG.warn("Exception with XML" ,e );
+                    m_log.warn("Exception with XML" ,e );
                     }
                 catch (final XPathExpressionException e)
                     {
-                    LOG.warn("Exception with XPath" ,e );
+                    m_log.warn("Exception with XPath" ,e );
                     }
                 }
             };
@@ -477,7 +478,7 @@ public class AmazonS3Impl implements AmazonS3
         {
         final String fullPath = relativePath;
         final String url = this.m_secureUrlBase + "/" +fullPath;
-        LOG.debug("Sending to URL: "+url);
+        m_log.debug("Sending to URL: "+url);
         final DeleteMethod method = new DeleteMethod(url);
         
         final InputStreamHandler handler = new NoOpInputStreamHandler();
@@ -491,7 +492,7 @@ public class AmazonS3Impl implements AmazonS3
         //final String fullPath = this.m_accessKeyId + "-"+relativePath;
         final String fullPath = relativePath;
         final String url = this.m_secureUrlBase + "/" +fullPath;
-        LOG.debug("Sending to URL: "+url);
+        m_log.debug("Sending to URL: "+url);
         final PutMethod method = new PutMethod(url);
 
         if (re != null)
@@ -523,14 +524,16 @@ public class AmazonS3Impl implements AmazonS3
         
         try 
             {
-            if (method.getURI().getHost().contains("archive.org")) 
+            final URI uri = method.getURI();
+            m_log.info("Using URI: {}", uri);
+            final String host = uri.getHost();
+            if (host.contains("archive.org")) 
                 {
                 method.addRequestHeader("x-amz-auto-make-bucket", "1");
                 }
             } 
-        catch (URIException e) 
+        catch (final URIException e) 
             {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             }
         
@@ -579,9 +582,9 @@ public class AmazonS3Impl implements AmazonS3
         method.getParams().setParameter(
             HttpMethodParams.RETRY_HANDLER, retryHandler);
 
-        if (LOG.isDebugEnabled())
+        if (m_log.isDebugEnabled())
             {
-            LOG.debug("HTTP request headers: ");
+            m_log.debug("HTTP request headers: ");
             printHeaders(method.getRequestHeaders());
             }
         try
@@ -593,7 +596,7 @@ public class AmazonS3Impl implements AmazonS3
             final int code = statusLine.getStatusCode();
             if (code < 200 || code > 299)
                 {
-                LOG.debug("Did not receive 200 level response: "+statusLine);
+                m_log.debug("Did not receive 200 level response: "+statusLine);
                 final Header[] responseHeaders = method.getResponseHeaders();
                 printHeaders(responseHeaders);
                 
@@ -603,7 +606,7 @@ public class AmazonS3Impl implements AmazonS3
                 final String response = IOUtils.toString(is);
                 final String msg = statusLine + "\nwith body:\n" + response;
                 
-                LOG.debug("Got response: "+msg);
+                m_log.debug("Got response: "+msg);
                 
                 IOUtils.closeQuietly(is);
                 // TODO: Send this to the stream handler.
@@ -639,7 +642,7 @@ public class AmazonS3Impl implements AmazonS3
         final String canonicalString =
             AmazonS3Utils.makeCanonicalString(methodString, fullPath, 
                 method.getRequestHeaders());
-        LOG.debug("Using canonical string: "+canonicalString);
+        m_log.debug("Using canonical string: "+canonicalString);
         final String encodedCanonical = 
             SecurityUtils.signAndEncode(this.m_secretAccessKey, canonicalString);
         
@@ -654,7 +657,7 @@ public class AmazonS3Impl implements AmazonS3
         for (int i = 0; i < headers.length; i++)
             {
             final Header rh = headers[i];
-            LOG.debug(rh.toString());
+            m_log.debug(rh.toString());
             }
         }
     }
