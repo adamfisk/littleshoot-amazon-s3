@@ -17,10 +17,12 @@
 
     <dependencies>
 
+<!--
         <dependency>
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
             </dependency>
+-->
 
         <dependency>
             <groupId>commons-cli</groupId>
