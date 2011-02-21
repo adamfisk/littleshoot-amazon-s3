@@ -17,8 +17,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.lastbamboo.common.amazon.stack.AwsUtils;
-import org.lastbamboo.common.util.Pair;
-import org.lastbamboo.common.util.PairImpl;
+import org.littleshoot.util.Pair;
+import org.littleshoot.util.PairImpl;
 
 /**
  * Accepts arguments to create s3 buckets, upload files, etc.

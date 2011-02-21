@@ -2,7 +2,7 @@ package org.lastbamboo.common.amazon.s3;
 
 import org.junit.Test;
 import org.lastbamboo.common.amazon.stack.AwsUtils;
-import org.lastbamboo.common.util.SecurityUtils;
+import org.littleshoot.util.SecurityUtils;
 
 
 public class AmazonS3LauncherTest
