@@ -164,6 +164,11 @@ public class AmazonS3Impl implements AmazonS3 {
             throws IOException {
         putFile(bucketName, file, true);
     }
+    
+    public void putPublicFile(final String bucketName, final File file,
+        final String mimeType) throws IOException {
+        putFile(bucketName, file, mimeType, true);
+    }
 
     public void putPublicDir(final String bucketName, final File dir)
             throws IOException {
@@ -180,8 +185,12 @@ public class AmazonS3Impl implements AmazonS3 {
 
     private void putFile(final String bucketName, final File file,
             final boolean makePublic) throws IOException {
+        putFile(bucketName, file, this.mimeMap.getContentType(file), makePublic);
+    }
+    
+    private void putFile(final String bucketName, final File file,
+        final String mimeType, final boolean makePublic) throws IOException {
         try {
-            final String mimeType = this.mimeMap.getContentType(file);
             final RequestEntity re = new FileRequestEntity(file, mimeType);
             put(bucketName + "/" + file.getName(), re, makePublic);
         } catch (final FileNotFoundException e) {

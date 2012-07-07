@@ -73,6 +73,10 @@ public class Launcher
             final Option putPublic = new Option("putp", "putpublic", true, 
                 "Adds the specified file to S3 as publicly readable.");
             add(putPublic, bucketFile, 2, new PutPublic());
+            
+            final Option putPublicMime = new Option("putpm", "putpublicmime", true, 
+                "Adds the specified file to S3 as publicly readable with a custom mime type.");
+            add(putPublicMime, bucketFile, 3, new PutPublicMime());
 
             final Option putAllPrivate = new Option("puta", "putall", true, 
                 "Adds all files in the specified directory as private files.");
@@ -281,34 +285,51 @@ public class Launcher
             }
         }
     
-    private static class PutPublic implements ArgsProcessor
-        {
+    private static class PutPublic implements ArgsProcessor {
 
-        public void processArgs(final String[] args)
-            {
+        public void processArgs(final String[] args) {
             final AmazonS3 s3 = setup(args, 2, "bucketName fileName");
             final String bucketName = args[0];
             createBucket(bucketName, s3);
             final String fileString = args[1];
             final File file = new File(fileString);
-            if (!file.isFile())
-                {
-                System.out.println("File not found: "+fileString);
+            if (!file.isFile()) {
+                System.out.println("File not found: " + fileString);
                 return;
-                }
-            try
-                {
+            }
+            try {
                 s3.putPublicFile(bucketName, file);
-                }
-            catch (final IOException e)
-                {
+            } catch (final IOException e) {
                 System.out.println("Could not upload file.  Error was: ");
                 e.printStackTrace();
                 System.exit(1);
-                }
             }
         }
+    }
 
+    private static class PutPublicMime implements ArgsProcessor {
+
+        public void processArgs(final String[] args) {
+            final AmazonS3 s3 = setup(args, 3, "bucketName fileName mimeType");
+            final String bucketName = args[0];
+            createBucket(bucketName, s3);
+            final String fileString = args[1];
+            final File file = new File(fileString);
+            if (!file.isFile()) {
+                System.out.println("File not found: " + fileString);
+                return;
+            }
+            final String mimeType = args[2];
+            try {
+                s3.putPublicFile(bucketName, file, mimeType);
+            } catch (final IOException e) {
+                System.out.println("Could not upload file.  Error was: ");
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
+    }
+    
     private static void createBucket(final String bucketName, final AmazonS3 s3) 
         {
         try 
@@ -452,38 +473,31 @@ public class Launcher
             }
         }
     
-    private static AmazonS3 setup(final String[] args, final int length, 
-        final String message)
-        {
+    private static AmazonS3 setup(final String[] args, final int length,
+            final String message) {
         checkArgs(args, length, message);
-        try
-            {
+        try {
             return new AmazonS3Impl();
-            }
-        catch (final IOException e)
-            {
+        } catch (final IOException e) {
             System.out.println("Error loading props files...");
             throw new IllegalArgumentException("Error loading props files", e);
-            }
         }
+    }
     
-    private static void checkArgs(final String[] args, final int length, 
-        final String message)
-        {
-        if (args.length < length)
-            {
+    private static void checkArgs(final String[] args, final int length,
+            final String message) {
+        if (args.length < length) {
             final StringBuilder sb = new StringBuilder();
-            sb.append("Too few args.  Expected "+length);
-            sb.append(" but found " +args.length); 
+            sb.append("Too few args.  Expected " + length);
+            sb.append(" but found " + args.length);
             sb.append(" in ");
-            for (final String arg : args)
-                {
+            for (final String arg : args) {
                 sb.append(arg);
                 sb.append(" ");
-                }
+            }
             System.err.println(sb);
             System.exit(1);
-            }
         }
-
     }
+
+}

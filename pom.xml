@@ -1,81 +1,108 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>org.littleshoot</groupId>
-    <artifactId>amazon-s3</artifactId>
-    <packaging>jar</packaging>
-    <version>1.0-SNAPSHOT</version>
-    <name>LittleShoot Utilities for Amazon S3</name>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.littleshoot</groupId>
+  <artifactId>amazon-s3</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>LittleShoot Utilities for Amazon S3</name>
+  <url>http://www.littleshoot.org</url>
+
+  <organization>
+    <name>LittleShoot</name>
     <url>http://www.littleshoot.org</url>
+  </organization>
 
-    <organization>
-        <name>LittleShoot</name>
-        <url>http://www.littleshoot.org</url>
-    </organization>
+  <properties>
+     <slf4j.version>1.6.1</slf4j.version>
+     <ls.version>1.0-SNAPSHOT</ls.version>
+  </properties>
 
-    <properties>
-         <slf4j.version>1.6.1</slf4j.version>
-         <ls.version>1.0-SNAPSHOT</ls.version>
-    </properties>
+  <licenses>
+    <license>
+      <name>GNU General Public License Version 2</name> 
+      <url>http://www.gnu.org/licenses/gpl.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
-    <licenses>
-        <license>
-            <name>GNU General Public License Version 2</name> 
-            <url>http://www.gnu.org/licenses/gpl.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+  <parent>
+    <groupId>org.littleshoot</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
 
-    <parent>
-        <groupId>org.littleshoot</groupId>
-        <artifactId>parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
+  <scm>
+    <connection>scm:git:https://adamfisk@github.com/adamfisk/littleshoot-amazon-s3.git</connection>
+    <developerConnection>scm:git:https://adamfisk@github.com/adamfisk/littleshoot-amazon-s3.git</developerConnection>
+    <url>https://adamfisk@github.com/adamfisk/littleshoot-amazon-s3.git</url>
+  </scm>
 
-    <scm>
-        <connection>scm:git:https://adamfisk@github.com/adamfisk/littleshoot-amazon-s3.git</connection>
-        <developerConnection>scm:git:https://adamfisk@github.com/adamfisk/littleshoot-amazon-s3.git</developerConnection>
-        <url>https://adamfisk@github.com/adamfisk/littleshoot-amazon-s3.git</url>
-    </scm>
+  <developers>
+    <developer>
+      <id>adamfisk</id>
+      <name>Adam Fisk</name>
+      <email>a@littleshoot.org</email>
+      <organization>LittleShoot</organization>
+      <organizationUrl>http://www.littleshoot.org/</organizationUrl>
+      <roles><role>Developer</role></roles>
+      <timezone>-5</timezone>
+    </developer>
+  </developers>
 
-    <developers>
-        <developer>
-            <id>adamfisk</id>
-            <name>Adam Fisk</name>
-            <email>a@littleshoot.org</email>
-            <organization>LittleShoot</organization>
-            <organizationUrl>http://www.littleshoot.org/</organizationUrl>
-            <roles><role>Developer</role></roles>
-            <timezone>-5</timezone>
-        </developer>
-    </developers>
+  <dependencies>
+    <dependency>
+      <groupId>commons-cli</groupId>
+      <artifactId>commons-cli</artifactId>
+      <version>1.2</version>
+    </dependency>
 
-    <dependencies>
+    <dependency>
+      <groupId>org.littleshoot</groupId>
+      <artifactId>amazon-stack</artifactId>
+      <version>${ls.version}</version>
+    </dependency> 
 
-        <dependency>
-            <groupId>commons-cli</groupId>
-            <artifactId>commons-cli</artifactId>
-            <version>1.2</version>
-        </dependency>
+    <dependency>
+      <groupId>org.littleshoot</groupId>
+      <artifactId>util</artifactId>
+      <version>${ls.version}</version>
+    </dependency> 
 
-        <dependency>
-            <groupId>org.littleshoot</groupId>
-            <artifactId>amazon-stack</artifactId>
-            <version>${ls.version}</version>
-        </dependency> 
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
-        <dependency>
-            <groupId>org.littleshoot</groupId>
-            <artifactId>util</artifactId>
-            <version>${ls.version}</version>
-        </dependency> 
+  <build>
+      <plugins>
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-5</version>
+                <executions>
+                    <execution>
+                        <id>latest-build</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.8.2</version>
-            <scope>test</scope>
-        </dependency>
-
-    </dependencies>
-
+                            <archive>
+                                <manifest>
+                                    <mainClass>org.lastbamboo.common.amazon.s3.Launcher</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+    </plugins>
+  </build>
 </project>
