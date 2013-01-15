@@ -12,11 +12,6 @@
     <url>http://www.littleshoot.org</url>
   </organization>
 
-  <properties>
-     <slf4j.version>1.6.1</slf4j.version>
-     <ls.version>1.0-SNAPSHOT</ls.version>
-  </properties>
-
   <licenses>
     <license>
       <name>GNU General Public License Version 2</name> 
@@ -71,7 +66,6 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.8.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
