@@ -43,14 +43,18 @@ public class Launcher {
         private void add(final Option opt, final String desc,
                 final int numArgs, final ArgsProcessor processor,
                 final boolean optional) {
+            addOpt(opt, desc, numArgs, optional);
+            optionsPairs.add(new PairImpl<Option, ArgsProcessor>(opt,
+                    processor));
+        }
+
+        private void addOpt(final Option opt, final String desc, 
+            final int numArgs, final boolean optional) {
             opt.setArgs(numArgs);
             opt.setValueSeparator(' ');
             opt.setArgName(desc);
             opt.setOptionalArg(optional);
-
             options.addOption(opt);
-            optionsPairs.add(new PairImpl<Option, ArgsProcessor>(opt,
-                    processor));
         }
 
         private void execute(final String[] args) {
@@ -58,7 +62,7 @@ public class Launcher {
             final String bucketDir = "bucket, dir";
             final String bucket = "bucket";
             options.addOption("h", "help", false, "Print this message.");
-
+            
             final Option get = new Option("get", "getfile", true,
                     "Gets the specified file.");
             add(get, bucketFile, 2, new Get());
@@ -66,7 +70,7 @@ public class Launcher {
             final Option putPrivate = new Option("put", "putprivate", true,
                     "Adds the specified file to S3 as a private file.");
             add(putPrivate, bucketFile, 2, new PutPrivate());
-
+            
             final Option putPublic = new Option("putp", "putpublic", true,
                     "Adds the specified file to S3 as publicly readable.");
             add(putPublic, bucketFile, 2, new PutPublic());
@@ -86,6 +90,10 @@ public class Launcher {
                             + "directories or recurse.");
             add(putAllPublic, bucketDir, 2, new PutAllPublic());
 
+            final Option proxy = new Option("x", "proxy", true,
+                    "Sets the proxy to use.");
+            addOpt(proxy, "host:port", 1, true);
+            
             final Option delete = new Option(
                     "rm",
                     "delete",
@@ -168,7 +176,6 @@ public class Launcher {
      * @param args The command line arguments.
      */
     public static void main(final String[] args) {
-
         final Command bean = new Command();
         bean.execute(args);
     }
