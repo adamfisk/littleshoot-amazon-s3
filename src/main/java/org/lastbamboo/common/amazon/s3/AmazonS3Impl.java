@@ -27,6 +27,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.lastbamboo.common.amazon.stack.AwsUtils;
@@ -505,6 +506,13 @@ public class AmazonS3Impl implements AmazonS3 {
 
         method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
                 retryHandler);
+        
+        if (StringUtils.isNotBlank(GlobalOptions.getProxyHost()) &&
+                GlobalOptions.getProxyPort() > 0) {
+            log.debug("Setting proxy!!");
+            client.getHostConfiguration().setProxy(GlobalOptions.getProxyHost(), 
+                    GlobalOptions.getProxyPort());
+        }
 
         if (log.isDebugEnabled()) {
             log.debug("HTTP request headers: ");

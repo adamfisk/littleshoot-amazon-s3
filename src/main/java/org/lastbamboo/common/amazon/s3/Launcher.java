@@ -14,17 +14,18 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.lastbamboo.common.amazon.stack.AwsUtils;
 import org.littleshoot.util.Pair;
 import org.littleshoot.util.PairImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Accepts arguments to create s3 buckets, upload files, etc.
  */
 public class Launcher {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Launcher.class);
     private static final String BUCKETS_KEY = "littleShootS3Buckets";
 
     private static final class Command {
@@ -92,7 +93,10 @@ public class Launcher {
 
             final Option proxy = new Option("x", "proxy", true,
                     "Sets the proxy to use.");
-            addOpt(proxy, "host:port", 1, true);
+            
+            // This is redundant given the later custom proxy config, but oh
+            // well.
+            add(proxy, "host:port", 1, new ProxyProcessor());
             
             final Option delete = new Option(
                     "rm",
@@ -131,17 +135,20 @@ public class Launcher {
                 final CommandLine cmd = parser.parse(options, args);
 
                 if (cmd.hasOption(verbose.getOpt())) {
-                    Logger.getRootLogger().setLevel(Level.ALL);
+                    //Logger.getRootLogger().setLevel(Level.ALL);
+                }
+                
+                if (cmd.hasOption(proxy.getOpt())) {
+                    final String[] values = convertVals(cmd, proxy);
+                    final ArgsProcessor processor = new ProxyProcessor();
+                    processor.processArgs(values);
                 }
 
                 for (final Pair<Option, ArgsProcessor> optionPair : optionsPairs) {
                     final Option opt = optionPair.getFirst();
                     if (cmd.hasOption(opt.getOpt())) {
                         final ArgsProcessor processor = optionPair.getSecond();
-                        String[] values = cmd.getOptionValues(opt.getOpt());
-                        if (values == null) {
-                            values = new String[0];
-                        }
+                        final String[] values = convertVals(cmd, opt);
                         processor.processArgs(values);
                     }
                 }
@@ -161,6 +168,15 @@ public class Launcher {
             }
         }
 
+
+        private static String[] convertVals(CommandLine cmd, Option opt) {
+            final String[] values = cmd.getOptionValues(opt.getOpt());
+            if (values == null) {
+                return new String[0];
+            }
+            return values;
+        }
+        
         private void printHelp() {
             final HelpFormatter formatter = new HelpFormatter();
             // formatter.setLeftPadding(2);
@@ -204,6 +220,29 @@ public class Launcher {
             }
         }
     };
+    
+    private static class ProxyProcessor implements ArgsProcessor {
+
+        @Override
+        public void processArgs(final String[] values) {
+            LOG.debug("Processing proxy");
+            final String hostPort = values[0];
+            final String host = StringUtils.substringBefore(hostPort, ":");
+            if (StringUtils.isBlank(host)) {
+                System.err.println("Format: host:port");
+                return;
+            }
+            final String portStr = StringUtils.substringAfter(hostPort, ":");
+            if (!StringUtils.isNumeric(portStr)) {
+                System.err.println("Format: host:port");
+                return;
+            }
+            final int port = Integer.parseInt(portStr);
+            LOG.debug("Setting proxy data");
+            GlobalOptions.setProxyHost(host);
+            GlobalOptions.setProxyPort(port);
+        }
+    }
 
     private static class PutAllPublic implements ArgsProcessor {
         public void processArgs(final String[] args) {
