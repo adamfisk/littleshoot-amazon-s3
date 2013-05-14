@@ -3,7 +3,7 @@
   <groupId>org.littleshoot</groupId>
   <artifactId>amazon-s3</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.3-SNAPSHOT</version>
   <name>LittleShoot Utilities for Amazon S3</name>
   <url>http://www.littleshoot.org</url>
 
@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.littleshoot</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.3</version>
   </parent>
 
   <scm>
@@ -70,6 +70,7 @@
     </dependency>
   </dependencies>
 
+<!--
   <build>
       <plugins>
       <plugin>
@@ -83,9 +84,6 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-<!--
-              <finalName>${project.artifactId}-${project.version}-shaded</finalName>
--->
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
@@ -99,4 +97,5 @@
       </plugin>
     </plugins>
   </build>
+-->
 </project>
